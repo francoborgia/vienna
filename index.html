@@ -1,0 +1,507 @@
+# Create a clean, robust HTML file for the user's app
+code = r"""<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Vienna Guide — Pulito</title>
+  <style>
+    /* ====== Base ====== */
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;background:linear-gradient(135deg,#6a85b6,#bac8e0);min-height:100vh;color:#1f2937}
+    .app-container{max-width:420px;margin:0 auto;background:#fff;min-height:100vh;position:relative;overflow:hidden}
+
+    /* ====== Header / Tabs ====== */
+    .header{background:linear-gradient(135deg,#1a237e,#3949ab);color:#fff;padding:22px;text-align:center}
+    .header h1{font-size:24px;margin-bottom:6px}
+    .header p{font-size:13px;opacity:.95}
+    .nav-tabs{display:flex;background:#f6f7fb;border-bottom:1px solid #e5e7eb}
+    .nav-tab{flex:1;padding:14px 10px;text-align:center;background:none;border:none;cursor:pointer;font-size:14px;transition:.2s;border-bottom:3px solid transparent}
+    .nav-tab.active{background:#fff;border-bottom-color:#1a237e;color:#1a237e;font-weight:600}
+
+    /* ====== Content / Cards ====== */
+    .content{padding:18px;height:calc(100dvh - 210px);overflow-y:auto}
+    .card{background:#fff;border-radius:14px;padding:14px;margin-bottom:14px;box-shadow:0 6px 14px rgba(0,0,0,.08);transition:transform .18s, box-shadow .18s}
+    .card:hover{transform:translateY(-2px);box-shadow:0 10px 20px rgba(0,0,0,.12)}
+    .card-header{display:flex;align-items:center;margin-bottom:8px}
+    .card-icon{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-right:12px;font-size:19px}
+    .attraction-icon{background:#1a237e;color:#fff}
+    .parking-icon{background:#2e7d32;color:#fff}
+    .electric-icon{background:#1565c0;color:#fff}
+    .food-icon{background:#8b5cf6;color:#fff}
+    .extra-icon{background:#ef6c00;color:#fff}
+    .card-title{font-size:16px;font-weight:700;color:#111827}
+    .card-subtitle{font-size:12px;color:#6b7280;margin-top:2px}
+    .card-description{font-size:14px;color:#4b5563;line-height:1.45;margin:10px 0}
+    .card-info{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+    .tag{background:#f3f4f6;padding:4px 8px;border-radius:999px;font-size:12px;color:#6b7280}
+    .tag.free{background:#dcfce7;color:#166534}
+    .tag.paid{background:#fee2e2;color:#991b1b}
+    .tag.fast{background:#dbeafe;color:#1e40af}
+    .tag.walk{background:#e0f2fe;color:#075985}
+    .tag.pt{background:#ecfccb;color:#3f6212}
+    .tag.drive{background:#fee2e2;color:#9f1239}
+    .distance{font-size:12px;color:#2e7d32;font-weight:700}
+    .stars{color:#f59e0b;font-size:14px}
+    .hidden{display:none}
+    .search-box{width:100%;padding:12px;border:1px solid #e5e7eb;border-radius:10px;margin-bottom:14px;font-size:14px}
+    .filters{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+    .filter-btn{padding:8px 12px;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:999px;font-size:12px;cursor:pointer;transition:.2s}
+    .filter-btn.active{background:#1a237e;color:#fff;border-color:#1a237e}
+
+    /* ====== Weather ====== */
+    .weather{display:flex;gap:10px;align-items:center;background:#eef2ff;border:1px solid #c7d2fe;border-left:4px solid #6366f1;padding:10px;border-radius:12px;margin:10px 0}
+    .weather .now{display:flex;align-items:center;gap:10px}
+    .weather .temp{font-size:22px;font-weight:800}
+    .weather .desc{font-size:12px;color:#374151}
+    .hourly{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-top:8px}
+    .hchip{min-width:64px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:10px;padding:6px;text-align:center;font-size:12px}
+
+    /* ====== GPS Panel ====== */
+    .gps-panel{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:8px 0 2px}
+    .actions{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0}
+    .actions button{padding:8px 10px;border:1px solid #e5e7eb;border-radius:10px;background:#f3f4f6;cursor:pointer;font-size:12px}
+    .actions button.primary{background:#1a237e;color:#fff;border-color:#1a237e}
+    .notice{background:#e3f2fd;padding:10px;border-radius:10px;margin:10px 0;border-left:4px solid #2196f3;font-size:13px;color:#0f172a}
+
+    /* ====== Detail overlay ====== */
+    .detail-page{position:fixed;top:0;left:0;width:100%;height:100%;background:#fff;z-index:9999;transform:translateX(100%);transition:transform .28s ease;overflow-y:auto}
+    .detail-page.active{transform:translateX(0)}
+    .detail-header{background:linear-gradient(135deg,#1a237e,#3949ab);color:#fff;padding:20px;position:sticky;top:0}
+    .back-btn{position:absolute;left:14px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.2);border:none;color:#fff;width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:18px}
+    .detail-content{padding:18px}
+    .detail-image{width:100%;height:200px;object-fit:cover;border-radius:12px;margin:12px 0}
+    .detail-title{font-size:22px;font-weight:800;color:#111;margin:6px 0}
+    .detail-subtitle{font-size:14px;color:#6b7280;margin-bottom:12px}
+    .detail-text{font-size:15px;color:#374151;line-height:1.6;margin-bottom:16px}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px}
+    .info{background:#f8fafc;padding:14px;border-radius:10px;text-align:center}
+    .info .i{font-size:22px;margin-bottom:6px}
+    .go-btn{width:100%;background:linear-gradient(135deg,#2e7d32,#43a047);color:#fff;border:none;padding:14px;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;margin-top:16px}
+
+    /* ====== Floating Map Button ====== */
+    .floating-btn{position:fixed;bottom:20px;right:20px;width:56px;height:56px;background:#1a237e;border:none;border-radius:50%;color:#fff;font-size:24px;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.25);transition:.2s;z-index:1000}
+    .floating-btn:hover{transform:scale(1.08)}
+  </style>
+</head>
+<body>
+<div class="app-container">
+  <div class="header">
+    <h1>🎻 Vienna Guide</h1>
+    <p>Storia imperiale, arte, caffè — meteo + GPS (pulito)</p>
+  </div>
+
+  <div class="nav-tabs" role="tablist" aria-label="Sezioni">
+    <button class="nav-tab active" role="tab" aria-current="page" onclick="showTab('attractions', event)">🏛️ Attrazioni</button>
+    <button class="nav-tab" role="tab" onclick="showTab('food', event)">🍽️ Ristoranti</button>
+    <button class="nav-tab" role="tab" onclick="showTab('parking', event)">🅿️ Parcheggi</button>
+    <button class="nav-tab" role="tab" onclick="showTab('electric', event)">🔌 Elettrico</button>
+    <button class="nav-tab" role="tab" onclick="showTab('extra', event)">🎢 Extra</button>
+  </div>
+
+  <div class="content">
+    <!-- METEO -->
+    <div id="weather" class="weather">
+      <div class="now">
+        <div id="w-icon">⛅</div>
+        <div>
+          <div class="temp" id="w-temp">--°C</div>
+          <div class="desc" id="w-desc">Meteo in caricamento…</div>
+        </div>
+      </div>
+    </div>
+    <div id="hourly" class="hourly"></div>
+
+    <!-- GPS controls -->
+    <div class="gps-panel">
+      <label title="Usa la posizione del dispositivo">
+        <input type="checkbox" id="gps-toggle"/>
+        <span>Usa GPS automatico</span>
+      </label>
+      <div class="actions" id="gps-actions">
+        <button class="primary" onclick="retryGPS()">🔄 Riprova GPS</button>
+        <button onclick="selectManualLocation()">🎯 Posizione manuale</button>
+      </div>
+    </div>
+    <div class="notice" id="location-status">📍 Inizializzazione posizione…</div>
+
+    <!-- ATTRAZIONI -->
+    <section id="attractions-content">
+      <input class="search-box" placeholder="🔍 Cerca attrazioni (es. Schönbrunn)" oninput="filterContentDeb(this.value,'attractions')"/>
+      <div class="filters">
+        <button class="filter-btn active" onclick="filterByType('all','attractions',event)">Tutte</button>
+        <button class="filter-btn" onclick="filterByType('imperiale','attractions',event)">Imperiali</button>
+        <button class="filter-btn" onclick="filterByType('museo','attractions',event)">Musei</button>
+        <button class="filter-btn" onclick="filterByType('panorama','attractions',event)">Panorami</button>
+        <button class="filter-btn" onclick="filterByType('architettura','attractions',event)">Architettura</button>
+      </div>
+
+      <article class="card attraction-card" data-type="architettura" onclick="openDetail('stephansdom')">
+        <div class="card-header"><div class="card-icon attraction-icon">⛪</div><div><div class="card-title">Cattedrale di Santo Stefano</div><div class="card-subtitle">Stephansdom • Centro storico</div></div></div>
+        <p class="card-description">Simbolo gotico di Vienna con tetto policromo. Torre sud panoramica.</p>
+        <div class="card-info"><span class="tag free">Navata gratis</span><span class="tag">⭐ 4.7</span><span class="distance" id="distance-stephansdom">📍 Calcolo…</span></div>
+      </article>
+
+      <article class="card attraction-card" data-type="imperiale" onclick="openDetail('schoenbrunn')">
+        <div class="card-header"><div class="card-icon attraction-icon">🏰</div><div><div class="card-title">Palazzo di Schönbrunn</div><div class="card-subtitle">Residenza imperiale • Hietzing</div></div></div>
+        <p class="card-description">Residenza estiva degli Asburgo con giardini barocchi, Gloriette e zoo storico.</p>
+        <div class="card-info"><span class="tag paid">Tour a pagamento</span><span class="tag">⭐ 4.8</span><span class="distance" id="distance-schoenbrunn">📍 Calcolo…</span></div>
+      </article>
+
+      <article class="card attraction-card" data-type="museo" onclick="openDetail('belvedere')">
+        <div class="card-header"><div class="card-icon attraction-icon">🖼️</div><div><div class="card-title">Belvedere</div><div class="card-subtitle">Museo d'arte • Klimt</div></div></div>
+        <p class="card-description">Belvedere Superiore/Inferiore con “Il Bacio” di Klimt e arte austriaca.</p>
+        <div class="card-info"><span class="tag paid">Biglietto</span><span class="tag">⭐ 4.7</span><span class="distance" id="distance-belvedere">📍 Calcolo…</span></div>
+      </article>
+
+      <article class="card attraction-card" data-type="panorama" onclick="openDetail('prater')">
+        <div class="card-header"><div class="card-icon attraction-icon">🎡</div><div><div class="card-title">Prater & Ruota Panoramica</div><div class="card-subtitle">Wurstelprater • Leopoldstadt</div></div></div>
+        <p class="card-description">Parco storico con la Riesenrad del 1897 e viali alberati.</p>
+        <div class="card-info"><span class="tag free">Parco pubblico</span><span class="tag">⭐ 4.6</span><span class="distance" id="distance-prater">📍 Calcolo…</span></div>
+      </article>
+
+      <article class="card attraction-card" data-type="museo" onclick="openDetail('mq')">
+        <div class="card-header"><div class="card-icon attraction-icon">🏛️</div><div><div class="card-title">MuseumsQuartier</div><div class="card-subtitle">Leopold Museum, mumok</div></div></div>
+        <p class="card-description">Grande polo culturale con corti vivaci, arte moderna e caffè.</p>
+        <div class="card-info"><span class="tag paid">Musei</span><span class="tag">⭐ 4.6</span><span class="distance" id="distance-mq">📍 Calcolo…</span></div>
+      </article>
+
+      <article class="card attraction-card" data-type="architettura" onclick="openDetail('hundert')">
+        <div class="card-header"><div class="card-icon attraction-icon">🎨</div><div><div class="card-title">Hundertwasserhaus</div><div class="card-subtitle">Architettura organica • Landstraße</div></div></div>
+        <p class="card-description">Colori vivaci, linee curve e terrazze alberate.</p>
+        <div class="card-info"><span class="tag free">Visita esterna</span><span class="tag">⭐ 4.5</span><span class="distance" id="distance-hundert">📍 Calcolo…</span></div>
+      </article>
+    </section>
+
+    <!-- FOOD -->
+    <section id="food-content" class="hidden">
+      <input class="search-box" placeholder="🔍 Cerca ristoranti (es. schnitzel, fast food)" oninput="filterContentDeb(this.value,'food')"/>
+      <div class="filters">
+        <button class="filter-btn active" onclick="filterByType('all','food',event)">Tutti</button>
+        <button class="filter-btn" onclick="filterByType('tipico','food',event)">Tipici</button>
+        <button class="filter-btn" onclick="filterByType('fast','food',event)">Fast Food</button>
+        <button class="filter-btn" onclick="filterByType('caffè','food',event)">Caffè storici</button>
+      </div>
+
+      <article class="card food-card" data-type="tipico" onclick="openDetail('figlmueller')">
+        <div class="card-header"><div class="card-icon food-icon">🥩</div><div><div class="card-title">Figlmüller Bäckerstraße</div><div class="card-subtitle">Schnitzel gigante • Centro</div></div></div>
+        <p class="card-description">Il più celebre schnitzel viennese. Meglio prenotare.</p>
+        <div class="card-info"><span class="stars">★★★★☆ 4.6</span><span class="distance" id="distance-figlmueller">📍 Calcolo…</span><span class="tag" id="mode-figlmueller">—</span></div>
+      </article>
+
+      <article class="card food-card" data-type="tipico" onclick="openDetail('plachutta')">
+        <div class="card-header"><div class="card-icon food-icon">🍲</div><div><div class="card-title">Plachutta Wollzeile</div><div class="card-subtitle">Tafelspitz • Centro</div></div></div>
+        <p class="card-description">Brodo e bollito alla viennese, servizio classico.</p>
+        <div class="card-info"><span class="stars">★★★★☆ 4.5</span><span class="distance" id="distance-plachutta">📍 Calcolo…</span><span class="tag" id="mode-plachutta">—</span></div>
+      </article>
+
+      <article class="card food-card" data-type="caffè" onclick="openDetail('cafecentral')">
+        <div class="card-header"><div class="card-icon food-icon">☕</div><div><div class="card-title">Café Central</div><div class="card-subtitle">Caffè storico • Ring</div></div></div>
+        <p class="card-description">Saloni storici, torte e atmosfera letteraria.</p>
+        <div class="card-info"><span class="stars">★★★★☆ 4.6</span><span class="distance" id="distance-cafecentral">📍 Calcolo…</span><span class="tag" id="mode-cafecentral">—</span></div>
+      </article>
+
+      <article class="card food-card" data-type="fast" onclick="openDetail('mcd-stephansplatz')">
+        <div class="card-header"><div class="card-icon food-icon">🍔</div><div><div class="card-title">McDonald's Stephansplatz</div><div class="card-subtitle">Fast food • Centro</div></div></div>
+        <p class="card-description">Classico fast food in pieno centro.</p>
+        <div class="card-info"><span class="stars">★★★☆☆ 3.9</span><span class="distance" id="distance-mcd-stephansplatz">📍 Calcolo…</span><span class="tag" id="mode-mcd-stephansplatz">—</span></div>
+      </article>
+
+      <article class="card food-card" data-type="fast" onclick="openDetail('bk-prater')">
+        <div class="card-header"><div class="card-icon food-icon">🍟</div><div><div class="card-title">Burger King – Prater</div><div class="card-subtitle">Fast food • Leopoldstadt</div></div></div>
+        <p class="card-description">Comodo se stai visitando il Prater.</p>
+        <div class="card-info"><span class="stars">★★★☆☆ 3.8</span><span class="distance" id="distance-bk-prater">📍 Calcolo…</span><span class="tag" id="mode-bk-prater">—</span></div>
+      </article>
+    </section>
+
+    <!-- PARCHEGGI -->
+    <section id="parking-content" class="hidden">
+      <input class="search-box" placeholder="🔍 Cerca parcheggi (es. Park & Ride)" oninput="filterContentDeb(this.value,'parking')"/>
+      <div class="filters">
+        <button class="filter-btn active" onclick="filterByType('all','parking',event)">Tutti</button>
+        <button class="filter-btn" onclick="filterByType('parkride','parking',event)">Park & Ride</button>
+        <button class="filter-btn" onclick="filterByType('garage','parking',event)">Garage</button>
+        <button class="filter-btn" onclick="filterByType('strada','parking',event)">Su strada</button>
+      </div>
+
+      <article class="card parking-card" data-type="parkride" onclick="openDetail('pr-erdberg')">
+        <div class="card-header"><div class="card-icon parking-icon">🅿️</div><div><div class="card-title">Park & Ride Erdberg</div><div class="card-subtitle">Linea U3 • Est</div></div></div>
+        <p class="card-description">Lascia l'auto e raggiungi il centro con la metro U3.</p>
+        <div class="card-info"><span class="tag paid">Tariffa giornaliera</span><span class="tag">🚇 U3</span><span class="distance" id="distance-pr-erdberg">📍 Calcolo…</span></div>
+      </article>
+
+      <article class="card parking-card" data-type="garage" onclick="openDetail('mq-garage')">
+        <div class="card-header"><div class="card-icon parking-icon">🏢</div><div><div class="card-title">Garage MuseumsQuartier</div><div class="card-subtitle">Sotto MQ • Centro</div></div></div>
+        <p class="card-description">Garage coperto centrale, accesso diretto ai musei.</p>
+        <div class="card-info"><span class="tag paid">Oraria</span><span class="tag">Coperto</span><span class="distance" id="distance-mq-garage">📍 Calcolo…</span></div>
+      </article>
+
+      <article class="card parking-card" data-type="strada" onclick="openDetail('kurzpark')">
+        <div class="card-header"><div class="card-icon parking-icon">🚏</div><div><div class="card-title">Kurzparkzone (su strada)</div><div class="card-subtitle">Zone a sosta breve • App</div></div></div>
+        <p class="card-description">In molte zone interne la sosta è a tempo. Controlla orari e durata sull'app Handyparken.</p>
+        <div class="card-info"><span class="tag">⏱️ Tempo limitato</span><span class="tag">📱 App Handyparken</span><span class="distance">📍 varie zone</span></div>
+      </article>
+    </section>
+
+    <!-- ELETTRICO -->
+    <section id="electric-content" class="hidden">
+      <input class="search-box" placeholder="🔍 Cerca stazioni di ricarica" oninput="filterContentDeb(this.value,'electric')"/>
+      <div class="filters">
+        <button class="filter-btn active" onclick="filterByType('all','electric',event)">Tutte</button>
+        <button class="filter-btn" onclick="filterByType('fast','electric',event)">Ricarica rapida</button>
+        <button class="filter-btn" onclick="filterByType('garage','electric',event)">In garage</button>
+      </div>
+      <div class="notice">ℹ️ Le tariffe e l'accesso possono variare. Verifica sempre sull'app del gestore.</div>
+
+      <article class="card parking-card" data-type="fast" onclick="openDetail('wien-energie-rathaus')">
+        <div class="card-header"><div class="card-icon electric-icon">⚡</div><div><div class="card-title">Wien Energie – Rathaus</div><div class="card-subtitle">Ricarica AC/DC • Centro</div></div></div>
+        <p class="card-description">Accesso con app Wien Energie o RFID.</p>
+        <div class="card-info"><span class="tag fast">AC/DC</span><span class="tag">💳 App/RFID</span><span class="distance" id="distance-wien-energie-rathaus">📍 Calcolo…</span></div>
+      </article>
+
+      <article class="card parking-card" data-type="garage" onclick="openDetail('garage-karteis')">
+        <div class="card-header"><div class="card-icon electric-icon">🔋</div><div><div class="card-title">Garage Kärntner Straße – EV</div><div class="card-subtitle">Sottosuolo • Centro</div></div></div>
+        <p class="card-description">Stalli EV centrali, comodo per Stephansplatz.</p>
+        <div class="card-info"><span class="tag">AC</span><span class="tag">Garage</span><span class="distance" id="distance-garage-karteis">📍 Calcolo…</span></div>
+      </article>
+
+      <article class="card parking-card" data-type="fast" onclick="openDetail('tesla-vienna')">
+        <div class="card-header"><div class="card-icon electric-icon">⚡</div><div><div class="card-title">Tesla Supercharger – Vienna area</div><div class="card-subtitle">Rete Tesla • Extraurbano</div></div></div>
+        <p class="card-description">Verifica disponibilità e potenza dall'app Tesla.</p>
+        <div class="card-info"><span class="tag fast">DC</span><span class="tag">🚗 Tesla</span><span class="distance" id="distance-tesla-vienna">📍 Calcolo…</span></div>
+      </article>
+    </section>
+
+    <!-- EXTRA -->
+    <section id="extra-content" class="hidden">
+      <div class="filters">
+        <button class="filter-btn active" onclick="filterByType('all','extra',event)">Tutte</button>
+        <button class="filter-btn" onclick="filterByType('parco','extra',event)">Parchi divertimento</button>
+        <button class="filter-btn" onclick="filterByType('panorama','extra',event)">Panorami/Torri</button>
+        <button class="filter-btn" onclick="filterByType('avventura','extra',event)">Avventura</button>
+      </div>
+
+      <article class="card extra-card" data-type="parco" onclick="openDetail('prater')">
+        <div class="card-header"><div class="card-icon extra-icon">🎢</div><div><div class="card-title">Wurstelprater</div><div class="card-subtitle">Luna park storico • Centro-est</div></div></div>
+        <p class="card-description">Attrazioni classiche, ruota panoramica, street food.</p>
+        <div class="card-info"><span class="tag walk" id="mode-prater">—</span><span class="distance" id="distance-prater-extra">📍 Calcolo…</span></div>
+      </article>
+
+      <article class="card extra-card" data-type="panorama" onclick="openDetail('donauturm')">
+        <div class="card-header"><div class="card-icon extra-icon">🗼</div><div><div class="card-title">Donauturm</div><div class="card-subtitle">Torre sul Danubio • Vista città</div></div></div>
+        <p class="card-description">Piattaforma panoramica con ristorante girevole.</p>
+        <div class="card-info"><span class="tag" id="mode-donauturm">—</span><span class="distance" id="distance-donauturm">📍 Calcolo…</span></div>
+      </article>
+
+      <article class="card extra-card" data-type="avventura" onclick="openDetail('kahlenberg-park')">
+        <div class="card-header"><div class="card-icon extra-icon">🧗</div><div><div class="card-title">Waldseilpark Kahlenberg</div><div class="card-subtitle">Parco avventura sugli alberi</div></div></div>
+        <p class="card-description">Percorsi tra gli alberi sopra Vienna. Perfetto per famiglie attive.</p>
+        <div class="card-info"><span class="tag" id="mode-kahlenberg-park">—</span><span class="distance" id="distance-kahlenberg-park">📍 Calcolo…</span></div>
+      </article>
+
+      <article class="card extra-card" data-type="panorama" onclick="openDetail('rax-seilbahn')">
+        <div class="card-header"><div class="card-icon extra-icon">🚡</div><div><div class="card-title">Rax-Seilbahn (fuori città)</div><div class="card-subtitle">Funivia alpina • ~80 km</div></div></div>
+        <p class="card-description">La funivia più vicina a Vienna per panorami alpini.</p>
+        <div class="card-info"><span class="tag" id="mode-rax-seilbahn">—</span><span class="distance" id="distance-rax-seilbahn">📍 Calcolo…</span></div>
+      </article>
+    </section>
+  </div>
+
+  <button class="floating-btn" onclick="openMap()" title="Apri mappa">📍</button>
+</div>
+
+<!-- ====== Dettagli minimi autogenerati se mancanti (fallback in JS) ====== -->
+
+<script>
+/* ===== Ambiente / Stato ===== */
+const IS_SANDBOX = location.href.startsWith('about:') || location.origin === 'null' || (function(){try{return window.self!==window.top;}catch{return true;}})();
+let userLocation = null;         // posizione usata per i calcoli
+let useGPS = true;               // preferenza utente (persistita)
+let manualPos = null;            // posizione manuale (persistita)
+const LS = { useGPS:'vg.useGPS', manual:'vg.manualPos' };
+
+/* ===== Dati POI ===== */
+const attractions = {
+  'stephansdom': {lat:48.20849,lng:16.37208},
+  'schoenbrunn': {lat:48.18452,lng:16.31218},
+  'belvedere':   {lat:48.19112,lng:16.38005},
+  'prater':      {lat:48.21627,lng:16.39929},
+  'mq':          {lat:48.20387,lng:16.35854},
+  'hundert':     {lat:48.20703,lng:16.39213},
+  'donauturm':       {lat:48.24026,lng:16.40938},
+  'kahlenberg-park': {lat:48.27035,lng:16.33339},
+  'rax-seilbahn':    {lat:47.70274,lng:15.78037}
+};
+const points = {
+  'pr-erdberg': {lat:48.19279,lng:16.41385,type:'parkride'},
+  'mq-garage':  {lat:48.20358,lng:16.35820,type:'garage'},
+  'wien-energie-rathaus': {lat:48.21350,lng:16.35723,type:'fast'},
+  'garage-karteis': {lat:48.20566,lng:16.37043,type:'garage'},
+  'tesla-vienna':   {lat:48.18333,lng:16.33333,type:'fast'}
+};
+const food = {
+  'figlmueller':        {lat:48.2089,lng:16.3761,type:'tipico',stars:4.6},
+  'plachutta':          {lat:48.2080,lng:16.3769,type:'tipico',stars:4.5},
+  'cafecentral':        {lat:48.2101,lng:16.3647,type:'caffè',stars:4.6},
+  'mcd-stephansplatz':  {lat:48.2082,lng:16.3725,type:'fast',stars:3.9},
+  'bk-prater':          {lat:48.2167,lng:16.3978,type:'fast',stars:3.8}
+};
+
+/* ===== Utilità ===== */
+const debounce=(fn,d=200)=>{let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),d)}};
+const filterContentDeb = debounce(filterContent,200);
+function setStatus(text,color){const el=document.getElementById('location-status');if(!el)return;el.style.color=color||'#0f172a';el.textContent=text}
+function dist(a,b){const R=6371,dLat=(b.lat-a.lat)*Math.PI/180,dLng=(b.lng-a.lng)*Math.PI/180;const s1=Math.sin(dLat/2),s2=Math.sin(dLng/2);const q=s1*s1+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*s2*s2;const c=2*Math.atan2(Math.sqrt(q),Math.sqrt(1-q));const km=R*c;return km<1?Math.round(km*1000)+'m':km.toFixed(1)+'km'}
+function upd(id,txt){const a=document.getElementById('distance-'+id);if(a)a.textContent='📍 '+txt;const b=document.getElementById('detail-distance-'+id);if(b)b.textContent=txt;const map={'prater':'prater-extra'};if(map[id]){const c=document.getElementById('distance-'+map[id]);if(c)c.textContent='📍 '+txt}}
+function toKm(text){return text.endsWith('m')?parseInt(text)/1000:parseFloat(text)}
+function suggestMode(km){if(km<=1)return{label:'🚶‍♂️ A piedi',class:'walk'};if(km<=3)return{label:'🛴/🚇 Monopattino o metro',class:'pt'};if(km<=12)return{label:'🚇/🚗 Mezzi o auto',class:'pt'};return{label:'🚗 Auto/treno (lontano)',class:'drive'}}
+function updMode(id){const c=attractions[id]||food[id]||points[id];if(!c||!userLocation)return;const km=toKm(dist(userLocation,c));const tag=document.getElementById('mode-'+id);if(!tag)return;const m=suggestMode(km);tag.className='tag '+m.class;tag.textContent=m.label}
+
+/* ===== Meteo ===== */
+async function fetchWeather(lat,lng){
+  try{
+    const url=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current_weather=true&hourly=temperature_2m,precipitation,weathercode&timezone=auto`;
+    const r=await fetch(url); const j=await r.json();
+    if(j.current_weather){
+      const t=Math.round(j.current_weather.temperature);
+      const w=j.current_weather.weathercode;
+      document.getElementById('w-temp').textContent=t+'°C';
+      document.getElementById('w-desc').textContent=codeToDesc(w);
+      document.getElementById('w-icon').textContent=codeToIcon(w);
+    }
+    const hourly=document.getElementById('hourly'); hourly.innerHTML='';
+    const times=j.hourly.time,temps=j.hourly.temperature_2m,prec=j.hourly.precipitation,codes=j.hourly.weathercode;
+    const now=new Date(); let printed=0;
+    for(let i=0;i<times.length&&printed<12;i++){
+      const ts=new Date(times[i]); if(ts>=now){
+        const chip=document.createElement('div'); chip.className='hchip';
+        const hh=ts.getHours().toString().padStart(2,'0');
+        chip.innerHTML=`<div>${hh}:00</div><div style="font-size:18px">${codeToIcon(codes[i])}</div><div>${Math.round(temps[i])}°C</div><div style="font-size:11px">${prec[i]>0?prec[i].toFixed(1)+'mm':''}</div>`;
+        hourly.appendChild(chip); printed++;
+      }
+    }
+  }catch{ document.getElementById('w-desc').textContent='Meteo non disponibile'; }
+}
+function codeToDesc(c){const m={0:'Sereno',1:'Poco nuvoloso',2:'Variabile',3:'Nuvoloso',45:'Nebbia',48:'Brina',51:'Pioviggine',53:'Pioviggine',55:'Pioviggine forte',61:'Pioggia',63:'Pioggia',65:'Pioggia forte',71:'Neve',80:'Rovesci',95:'Temporale'};return m[c]||'Condizioni variabili'}
+function codeToIcon(c){if([0].includes(c))return'☀️';if([1,2].includes(c))return'⛅';if([3,45,48].includes(c))return'☁️';if([51,53,55,61,63,65,80].includes(c))return'🌧️';if([71].includes(c))return'🌨️';if([95].includes(c))return'⛈️';return'🌤️'}
+
+/* ===== Persistenza ===== */
+function loadPrefs(){
+  const sGPS = localStorage.getItem(LS.useGPS); if(sGPS!==null) useGPS = sGPS==='true';
+  const sman = localStorage.getItem(LS.manual); if(sman){ try{ const o=JSON.parse(sman); if(isFinite(o?.lat)&&isFinite(o?.lng)) manualPos={lat:+o.lat,lng:+o.lng}; }catch{} }
+}
+function saveUseGPS(v){localStorage.setItem(LS.useGPS,String(v))}
+function saveManualPos(p){manualPos=p;localStorage.setItem(LS.manual,JSON.stringify(p))}
+
+/* ===== GPS / Flusso ===== */
+function renderGPSActions(onlyManual=false){
+  const el=document.getElementById('gps-actions'); if(!el) return;
+  el.innerHTML=(onlyManual?'':`<button class="primary" onclick="retryGPS()">🔄 Riprova GPS</button>`)
+            + ` <button onclick="selectManualLocation()">🎯 Posizione manuale</button>`;
+}
+function retryGPS(){ initializeGPS(); }
+function selectManualLocation(){
+  const presets=[{name:'Stephansplatz (centro)',lat:48.20849,lng:16.37208},{name:'Schönbrunn',lat:48.18452,lng:16.31218},{name:'Prater',lat:48.21627,lng:16.39929}];
+  const pick=prompt(`Seleziona una posizione:\n${presets.map((p,i)=>`${i+1}) ${p.name}`).join('\n')}\n\nOppure inserisci "lat,lng"`,'1');
+  let lat,lng; if(!pick) return;
+  if(pick.includes(',')){const[a,b]=pick.split(',').map(x=>parseFloat(x.trim()));lat=a;lng=b;}
+  else{const k=parseInt(pick,10)-1;if(presets[k]){lat=presets[k].lat;lng=presets[k].lng;}}
+  if(!isFinite(lat)||!isFinite(lng)) return alert('Coordinate non valide');
+  setManual({lat,lng});
+}
+function setManual(pos){
+  userLocation={lat:pos.lat,lng:pos.lng}; saveManualPos(userLocation);
+  setStatus('📍 Posizione manuale impostata','#1e40af');
+  calcAll(); fetchWeather(userLocation.lat,userLocation.lng);
+}
+function initializeGPS(){
+  const toggle=document.getElementById('gps-toggle');
+  if(IS_SANDBOX){
+    useGPS=false; if(toggle){toggle.checked=false; toggle.disabled=true;}
+    const base=manualPos||{lat:48.20849,lng:16.37208}; userLocation=base;
+    setStatus('ℹ️ Sandbox/iframe: GPS disabilitato. Usa posizione manuale.','#b91c1c');
+    calcAll(); fetchWeather(base.lat,base.lng); renderGPSActions(true); return;
+  }
+  if(toggle) toggle.checked=!!useGPS;
+  if(!useGPS){
+    const base=manualPos||{lat:48.20849,lng:16.37208}; userLocation=base;
+    setStatus(manualPos?'📍 Uso posizione manuale salvata':'ℹ️ GPS disattivato: uso centro Vienna','#1e40af');
+    calcAll(); fetchWeather(base.lat,base.lng); renderGPSActions(true); return;
+  }
+  if(!window.isSecureContext && location.hostname!=='localhost'){
+    setStatus('⚠️ Non sei in HTTPS/localhost: GPS bloccato. Passa a manuale o attiva HTTPS.','#b91c1c');
+    const base=manualPos||{lat:48.20849,lng:16.37208}; userLocation=base;
+    calcAll(); fetchWeather(base.lat,base.lng); renderGPSActions(true); return;
+  }
+  if(!navigator.geolocation){
+    setStatus('⚠️ Browser senza GPS. Uso posizione manuale/centro Vienna.','#b91c1c');
+    const base=manualPos||{lat:48.20849,lng:16.37208}; userLocation=base;
+    calcAll(); fetchWeather(base.lat,base.lng); renderGPSActions(true); return;
+  }
+  setStatus('🔄 Rilevamento posizione…','#ff9800');
+  navigator.geolocation.getCurrentPosition((pos)=>{
+    userLocation={lat:pos.coords.latitude,lng:pos.coords.longitude};
+    setStatus('✅ GPS attivo - distanze precise','#4caf50');
+    calcAll(); fetchWeather(userLocation.lat,userLocation.lng); renderGPSActions(false);
+  },(error)=>{
+    const msgs={1:['📍 Accesso negato','Abilita localizzazione o usa manuale'],2:['📡 Non disponibile','Spostati all’aperto e riprova'],3:['⏱️ Timeout','Riprova più tardi']};
+    const[m,d]=msgs[error?.code]||['⚠️ Errore GPS','']; setStatus(`${m} ${d&&'— '+d}`,'#b45309');
+    const base=manualPos||{lat:48.20849,lng:16.37208}; userLocation=base;
+    calcAll(); fetchWeather(base.lat,base.lng); renderGPSActions(true);
+  },{enableHighAccuracy:true,timeout:15000,maximumAge:600000});
+}
+
+/* ===== Mappe / Navigazione ===== */
+function navigateTo(lat,lng,name,mode){const d=`${lat},${lng}`;const url=`https://www.google.com/maps/dir/?api=1&destination=${d}&travelmode=${mode||'driving'}&dir_action=navigate`;window.open(url,'_blank')}
+function navigateSmart(lat,lng,name){const mode=(userLocation?(toKm(dist(userLocation,{lat,lng}))<=1?'walking':'driving'):'driving');navigateTo(lat,lng,name,mode)}
+function openMap(){const c=userLocation||{lat:48.20849,lng:16.37208};window.open(`https://www.google.com/maps/search/?api=1&query=${c.lat},${c.lng}`,'_blank')}
+
+/* ===== UI: Tabs / Filtri ===== */
+function showTab(tab,ev){document.querySelectorAll('.nav-tab').forEach(b=>b.classList.remove('active'));if(ev&&ev.currentTarget)ev.currentTarget.classList.add('active');['attractions','food','parking','electric','extra'].forEach(s=>{document.getElementById(`${s}-content`).classList.toggle('hidden',s!==tab)});document.querySelector('.content').scrollTop=0}
+function filterContent(q,section){const cls=section==='attractions'?'attraction-card':section==='food'?'food-card':section==='parking'?'parking-card':'extra-card';const cards=document.querySelectorAll(`.${cls}`);const qq=(q||'').toLowerCase();cards.forEach(c=>{const txt=c.innerText.toLowerCase();c.style.display=txt.includes(qq)?'':'none'})}
+function filterByType(type,section,ev){if(ev&&ev.currentTarget){const wrap=ev.currentTarget.closest('.filters');if(wrap)wrap.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));ev.currentTarget.classList.add('active')}const cls=section==='attractions'?'attraction-card':section==='food'?'food-card':section==='parking'?'parking-card':'extra-card';document.querySelectorAll(`.${cls}`).forEach(c=>{const t=c.getAttribute('data-type')||'all';c.style.display=(type==='all'||t===type)?'':'none'})}
+
+/* ===== Dettaglio: robusto, no pushState ===== */
+function ensureDetailPage(id){
+  let page=document.getElementById('detail-'+id); if(page) return page;
+  const data=(attractions[id]||points[id]||food[id]); if(!data) return null;
+  const pretty=({stephansdom:'Cattedrale di Santo Stefano',schoenbrunn:'Palazzo di Schönbrunn',belvedere:'Belvedere',prater:'Prater & Riesenrad',mq:'MuseumsQuartier',hundert:'Hundertwasserhaus'})[id]||id.replace(/[-_]/g,' ').replace(/\b\w/g,m=>m.toUpperCase());
+  page=document.createElement('div'); page.id='detail-'+id; page.className='detail-page';
+  page.innerHTML=`
+    <div class="detail-header"><button class="back-btn" onclick="closeDetail()">←</button><h2>${pretty}</h2></div>
+    <div class="detail-content">
+      <div class="detail-title">${pretty}</div>
+      <div class="detail-subtitle">Dettaglio</div>
+      <p class="detail-text">Pagina generata automaticamente. Personalizzala quando vuoi.</p>
+      <div class="grid">
+        <div class="info"><div class="i">📍</div><div id="detail-distance-${id}">Calcolo…</div></div>
+        <div class="info"><div class="i">⭐</div><div>—</div></div>
+      </div>
+      <button class="go-btn" onclick="navigateSmart(${data.lat},${data.lng},'${pretty.replace(/'/g,"\\'")}')">🧭 Come arrivare</button>
+    </div>`;
+  document.body.appendChild(page); return page;
+}
+function openDetail(id){
+  const page=ensureDetailPage(id); if(!page) return alert('Dettaglio non disponibile');
+  page.classList.add('active'); document.body.style.overflow='hidden';
+  const coord=(attractions[id]||points[id]||food[id]); const base=userLocation||{lat:48.20849,lng:16.37208};
+  if(coord){ upd(id,dist(base,coord)); const tag=document.getElementById('mode-'+id); if(tag)updMode(id); }
+}
+function closeDetail(){const act=document.querySelector('.detail-page.active'); if(act) act.classList.remove('active'); document.body.style.overflow=''}
+
+/* ===== Avvio ===== */
+window.addEventListener('DOMContentLoaded',()=>{
+  loadPrefs();
+  const toggle=document.getElementById('gps-toggle');
+  if (IS_SANDBOX){ if(toggle){toggle.checked=false; toggle.disabled=true;} }
+  else if (toggle){ toggle.checked=!!useGPS; toggle.addEventListener('change',()=>{ useGPS = toggle.checked; saveUseGPS(useGPS); initializeGPS(); }); }
+  showTab('attractions'); initializeGPS();
+});
+</script>
+</body>
+</html>
+"""
+path = "/mnt/data/vienna_guide_pulito.html"
+with open(path, "w", encoding="utf-8") as f:
+    f.write(code)
+path
