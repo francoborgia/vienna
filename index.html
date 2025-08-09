@@ -1,10 +1,10 @@
-# Create a clean, robust HTML file for the user's app
+# Write a cleaned-up v2 HTML file with improved back button and example detail pages
 code = r"""<!DOCTYPE html>
 <html lang="it">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Vienna Guide — Pulito</title>
+  <title>Vienna Guide — Pulito v2</title>
   <style>
     /* ====== Base ====== */
     *{margin:0;padding:0;box-sizing:border-box}
@@ -64,11 +64,13 @@ code = r"""<!DOCTYPE html>
     .actions button.primary{background:#1a237e;color:#fff;border-color:#1a237e}
     .notice{background:#e3f2fd;padding:10px;border-radius:10px;margin:10px 0;border-left:4px solid #2196f3;font-size:13px;color:#0f172a}
 
-    /* ====== Detail overlay ====== */
+    /* ====== Detail overlay (miglior visibilità del tasto Back) ====== */
     .detail-page{position:fixed;top:0;left:0;width:100%;height:100%;background:#fff;z-index:9999;transform:translateX(100%);transition:transform .28s ease;overflow-y:auto}
     .detail-page.active{transform:translateX(0)}
-    .detail-header{background:linear-gradient(135deg,#1a237e,#3949ab);color:#fff;padding:20px;position:sticky;top:0}
-    .back-btn{position:absolute;left:14px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.2);border:none;color:#fff;width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:18px}
+    .detail-header{background:linear-gradient(135deg,#1a237e,#3949ab);color:#fff;padding:20px 20px 20px 70px;position:sticky;top:0;z-index:10}
+    .back-btn{position:absolute;left:16px;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:50%;border:1px solid #e5e7eb;background:#ffffff;color:#1a237e;cursor:pointer;font-size:20px;box-shadow:0 2px 6px rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center}
+    .back-btn:active{transform:translateY(-50%) scale(.98)}
+    .detail-header h2{margin:0;font-size:18px}
     .detail-content{padding:18px}
     .detail-image{width:100%;height:200px;object-fit:cover;border-radius:12px;margin:12px 0}
     .detail-title{font-size:22px;font-weight:800;color:#111;margin:6px 0}
@@ -88,7 +90,7 @@ code = r"""<!DOCTYPE html>
 <div class="app-container">
   <div class="header">
     <h1>🎻 Vienna Guide</h1>
-    <p>Storia imperiale, arte, caffè — meteo + GPS (pulito)</p>
+    <p>Storia imperiale, arte, caffè — meteo + GPS (pulito v2)</p>
   </div>
 
   <div class="nav-tabs" role="tablist" aria-label="Sezioni">
@@ -310,14 +312,67 @@ code = r"""<!DOCTYPE html>
   <button class="floating-btn" onclick="openMap()" title="Apri mappa">📍</button>
 </div>
 
-<!-- ====== Dettagli minimi autogenerati se mancanti (fallback in JS) ====== -->
+<!-- ====== ESEMPI DI PAGINE DETTAGLIO (personalizzabili) ====== -->
+<!-- Sostituisci testo/immagini qui sotto per avere dettagli "definitivi".
+     Se rimuovi un blocco, l'app ne genera uno minimo automaticamente. -->
+
+<div id="detail-stephansdom" class="detail-page">
+  <div class="detail-header"><button class="back-btn" onclick="closeDetail()">←</button><h2>Stephansdom</h2></div>
+  <div class="detail-content">
+    <img class="detail-image" alt="Stephansdom" src="https://images.unsplash.com/photo-1587397871532-9cb2ae1e6c55?w=1200&q=80"/>
+    <div class="detail-title">Cattedrale di Santo Stefano</div>
+    <div class="detail-subtitle">Gotico • Centro storico</div>
+    <p class="detail-text">Il simbolo di Vienna. Salita alla torre sud per il panorama sull’Innere Stadt.</p>
+    <div class="grid">
+      <div class="info"><div class="i">⏰</div><div>Orari estesi</div></div>
+      <div class="info"><div class="i">💰</div><div>Navata gratis</div></div>
+      <div class="info"><div class="i">⭐</div><div>4.7/5</div></div>
+      <div class="info"><div class="i">📍</div><div id="detail-distance-stephansdom">Calcolo…</div></div>
+    </div>
+    <button class="go-btn" onclick="navigateSmart(48.20849,16.37208,'Stephansdom')">🧭 Come arrivare</button>
+  </div>
+</div>
+
+<div id="detail-belvedere" class="detail-page">
+  <div class="detail-header"><button class="back-btn" onclick="closeDetail()">←</button><h2>Belvedere</h2></div>
+  <div class="detail-content">
+    <img class="detail-image" alt="Belvedere" src="https://images.unsplash.com/photo-1588702547919-26089e690ecc?w=1200&q=80"/>
+    <div class="detail-title">Belvedere</div>
+    <div class="detail-subtitle">Arte austriaca • Klimt</div>
+    <p class="detail-text">Il complesso barocco custodisce “Il Bacio” di Gustav Klimt e splendidi giardini.</p>
+    <div class="grid">
+      <div class="info"><div class="i">⏰</div><div>Orari variabili</div></div>
+      <div class="info"><div class="i">💰</div><div>Biglietto</div></div>
+      <div class="info"><div class="i">⭐</div><div>4.7/5</div></div>
+      <div class="info"><div class="i">📍</div><div id="detail-distance-belvedere">Calcolo…</div></div>
+    </div>
+    <button class="go-btn" onclick="navigateSmart(48.19112,16.38005,'Belvedere')">🧭 Come arrivare</button>
+  </div>
+</div>
+
+<div id="detail-prater" class="detail-page">
+  <div class="detail-header"><button class="back-btn" onclick="closeDetail()">←</button><h2>Prater & Riesenrad</h2></div>
+  <div class="detail-content">
+    <img class="detail-image" alt="Prater" src="https://images.unsplash.com/photo-1590237886680-25aa9b07e0a5?w=1200&q=80"/>
+    <div class="detail-title">Wurstelprater</div>
+    <div class="detail-subtitle">Parco divertimenti storico</div>
+    <p class="detail-text">Passeggiate lungo il Prater Hauptallee e panorama sulla città dalla ruota.</p>
+    <div class="grid">
+      <div class="info"><div class="i">⏰</div><div>Aperto gran parte dell’anno</div></div>
+      <div class="info"><div class="i">💰</div><div>Ingresso libero, attrazioni a pagamento</div></div>
+      <div class="info"><div class="i">⭐</div><div>4.6/5</div></div>
+      <div class="info"><div class="i">📍</div><div id="detail-distance-prater">Calcolo…</div></div>
+    </div>
+    <button class="go-btn" onclick="navigateSmart(48.21627,16.39929,'Prater')">🧭 Come arrivare</button>
+  </div>
+</div>
 
 <script>
 /* ===== Ambiente / Stato ===== */
 const IS_SANDBOX = location.href.startsWith('about:') || location.origin === 'null' || (function(){try{return window.self!==window.top;}catch{return true;}})();
-let userLocation = null;         // posizione usata per i calcoli
-let useGPS = true;               // preferenza utente (persistita)
-let manualPos = null;            // posizione manuale (persistita)
+let userLocation = null;
+let useGPS = true;
+let manualPos = null;
 const LS = { useGPS:'vg.useGPS', manual:'vg.manualPos' };
 
 /* ===== Dati POI ===== */
@@ -451,6 +506,14 @@ function initializeGPS(){
   },{enableHighAccuracy:true,timeout:15000,maximumAge:600000});
 }
 
+/* ===== Calcolo distanze / modalità ===== */
+function calcAll(){
+  if(!userLocation) return;
+  const ids=[...Object.keys(attractions),...Object.keys(points),...Object.keys(food)];
+  ids.forEach(id=>{const c=attractions[id]||points[id]||food[id]; upd(id,dist(userLocation,c)); if(food[id]) updMode(id)});
+  ['donauturm','kahlenberg-park','rax-seilbahn','prater'].forEach(id=>{const c=attractions[id]; if(c){ upd(id,dist(userLocation,c)); const t=document.getElementById('mode-'+id); if(t)updMode(id);} });
+}
+
 /* ===== Mappe / Navigazione ===== */
 function navigateTo(lat,lng,name,mode){const d=`${lat},${lng}`;const url=`https://www.google.com/maps/dir/?api=1&destination=${d}&travelmode=${mode||'driving'}&dir_action=navigate`;window.open(url,'_blank')}
 function navigateSmart(lat,lng,name){const mode=(userLocation?(toKm(dist(userLocation,{lat,lng}))<=1?'walking':'driving'):'driving');navigateTo(lat,lng,name,mode)}
@@ -471,8 +534,8 @@ function ensureDetailPage(id){
     <div class="detail-header"><button class="back-btn" onclick="closeDetail()">←</button><h2>${pretty}</h2></div>
     <div class="detail-content">
       <div class="detail-title">${pretty}</div>
-      <div class="detail-subtitle">Dettaglio</div>
-      <p class="detail-text">Pagina generata automaticamente. Personalizzala quando vuoi.</p>
+      <div class="detail-subtitle">Dettaglio rapido</div>
+      <p class="detail-text">Questo è un placeholder. Per personalizzare, aggiungi un blocco &lt;div id="detail-${id}" ...&gt; come negli esempi.</p>
       <div class="grid">
         <div class="info"><div class="i">📍</div><div id="detail-distance-${id}">Calcolo…</div></div>
         <div class="info"><div class="i">⭐</div><div>—</div></div>
@@ -501,7 +564,8 @@ window.addEventListener('DOMContentLoaded',()=>{
 </body>
 </html>
 """
-path = "/mnt/data/vienna_guide_pulito.html"
+path = "/mnt/data/vienna_guide_pulito_v2.html"
 with open(path, "w", encoding="utf-8") as f:
     f.write(code)
 path
+
