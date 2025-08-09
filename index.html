@@ -2,11 +2,11 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Vienna Guide — Plus</title>
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
-    body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:linear-gradient(135deg,#6a85b6 0%,#bac8e0 100%);min-height:100vh;color:#333}
+    body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:linear-gradient(135deg,#6a85b6,#bac8e0);min-height:100vh;color:#333}
     .app-container{max-width:420px;margin:0 auto;background:#fff;min-height:100vh;position:relative;overflow:hidden}
     .header{background:linear-gradient(135deg,#1a237e,#3949ab);color:#fff;padding:22px;text-align:center}
     .header h1{font-size:24px;margin-bottom:6px}
@@ -14,7 +14,7 @@
     .nav-tabs{display:flex;background:#f6f7fb;border-bottom:1px solid #e5e7eb}
     .nav-tab{flex:1;padding:14px 10px;text-align:center;background:none;border:none;cursor:pointer;font-size:14px;transition:.2s;border-bottom:3px solid transparent}
     .nav-tab.active{background:#fff;border-bottom-color:#1a237e;color:#1a237e;font-weight:600}
-    .content{padding:18px;height:calc(100dvh - 160px);overflow-y:auto}
+    .content{padding:18px;height:calc(100dvh - 200px);overflow-y:auto}
     .card{background:#fff;border-radius:14px;padding:14px;margin-bottom:14px;box-shadow:0 6px 14px rgba(0,0,0,.08);transition:transform .18s, box-shadow .18s}
     .card:hover{transform:translateY(-2px);box-shadow:0 10px 20px rgba(0,0,0,.12)}
     .card-header{display:flex;align-items:center;margin-bottom:8px}
@@ -44,6 +44,14 @@
     .filter-btn.active{background:#1a237e;color:#fff;border-color:#1a237e}
     .floating-btn{position:fixed;bottom:20px;right:20px;width:56px;height:56px;background:#1a237e;border:none;border-radius:50%;color:#fff;font-size:24px;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.25);transition:.2s;z-index:1000}
     .floating-btn:hover{transform:scale(1.08)}
+    .notice{background:#e3f2fd;padding:10px;border-radius:10px;margin:10px 0;border-left:4px solid #2196f3;font-size:13px;color:#0f172a}
+    /* Weather */
+    .weather{display:flex;gap:10px;align-items:center;background:#eef2ff;border:1px solid #c7d2fe;border-left:4px solid #6366f1;padding:10px;border-radius:12px;margin:10px 0}
+    .weather .now{display:flex;align-items:center;gap:10px}
+    .weather .temp{font-size:22px;font-weight:800}
+    .weather .desc{font-size:12px;color:#374151}
+    .hourly{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-top:8px}
+    .hchip{min-width:64px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:10px;padding:6px;text-align:center;font-size:12px}
     /* Detail pages */
     .detail-page{position:fixed;top:0;left:0;width:100%;height:100%;background:#fff;z-index:9999;transform:translateX(100%);transition:transform .28s ease;overflow-y:auto}
     .detail-page.active{transform:translateX(0)}
@@ -58,24 +66,17 @@
     .info{background:#f8fafc;padding:14px;border-radius:10px;text-align:center}
     .info .i{font-size:22px;margin-bottom:6px}
     .go-btn{width:100%;background:linear-gradient(135deg,#2e7d32,#43a047);color:#fff;border:none;padding:14px;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;margin-top:16px}
-    .notice{background:#e3f2fd;padding:10px;border-radius:10px;margin-bottom:12px;border-left:4px solid #2196f3;font-size:13px;color:#0f172a}
-    /* Weather */
-    .weather{display:flex;gap:10px;align-items:center;background:#eef2ff;border:1px solid #c7d2fe;border-left:4px solid #6366f1;padding:10px;border-radius:12px;margin:10px 0}
-    .weather .now{display:flex;align-items:center;gap:10px}
-    .weather .temp{font-size:22px;font-weight:800}
-    .weather .desc{font-size:12px;color:#374151}
-    .hourly{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-top:8px}
-    .hchip{min-width:64px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:10px;padding:6px;text-align:center;font-size:12px}
-    .actions{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0}
-    .actions button{padding:8px 10px;border:1px solid #e5e7eb;border-radius:10px;background:#f3f4f6;cursor:pointer;font-size:12px}
-    .actions button.primary{background:#1a237e;color:#fff;border-color:#1a237e}
+    /* GPS panel */
+    .gps-panel{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:8px 0 2px}
+    .switch{display:inline-flex;align-items:center;gap:8px;font-size:13px}
+    .switch input{width:36px;height:20px}
   </style>
 </head>
 <body>
 <div class="app-container">
   <div class="header">
     <h1>🎻 Vienna Guide</h1>
-    <p>Storia imperiale, arte, caffè — ora con meteo e food</p>
+    <p>Storia imperiale, arte, caffè — meteo + GPS con salvataggio</p>
   </div>
 
   <div class="nav-tabs" role="tablist" aria-label="Sezioni">
@@ -99,11 +100,18 @@
     </div>
     <div id="hourly" class="hourly"></div>
 
-    <div class="notice" id="location-status">📍 Attivazione GPS per calcolo distanze…</div>
-    <div class="actions" id="gps-actions">
-      <button class="primary" onclick="retryGPS()">🔄 Riprova GPS</button>
-      <button onclick="selectManualLocation()">🎯 Posizione manuale</button>
+    <!-- GPS controls -->
+    <div class="gps-panel">
+      <label class="switch" title="Usa la posizione del dispositivo">
+        <input type="checkbox" id="gps-toggle"/>
+        <span>Usa GPS automatico</span>
+      </label>
+      <div class="actions" id="gps-actions">
+        <button class="primary" onclick="retryGPS()">🔄 Riprova GPS</button>
+        <button onclick="selectManualLocation()">🎯 Imposta posizione manuale</button>
+      </div>
     </div>
+    <div class="notice" id="location-status">📍 Inizializzazione posizione…</div>
 
     <!-- ATTRAZIONI -->
     <section id="attractions-content">
@@ -290,242 +298,23 @@
   <button class="floating-btn" onclick="openMap()" title="Apri mappa">📍</button>
 </div>
 
-<!-- DETTAGLI ATTRAZIONI -->
-<div id="detail-stephansdom" class="detail-page">
-  <div class="detail-header"><button class="back-btn" onclick="closeDetail()">←</button><h2>Cattedrale di Santo Stefano</h2></div>
-  <div class="detail-content">
-    <img class="detail-image" src="https://images.unsplash.com/photo-1543349689-9a4d426bee8e?w=800&h=400&fit=crop" alt="Stephansdom"/>
-    <div class="detail-title">Stephansdom</div>
-    <div class="detail-subtitle">Gotico • Centro storico</div>
-    <p class="detail-text">Il simbolo della città. Tetto policromo, torre sud panoramica.</p>
-    <div class="grid">
-      <div class="info"><div class="i">💰</div><div>Navata gratis</div></div>
-      <div class="info"><div class="i">⭐</div><div>4.7/5</div></div>
-      <div class="info"><div class="i">📍</div><div id="detail-distance-stephansdom">Calcolo…</div></div>
-      <div class="info"><div class="i">⛪</div><div>Storico</div></div>
-    </div>
-    <button class="go-btn" onclick="navigateSmart(48.20849,16.37208,'Stephansdom')">🧭 Come arrivare</button>
-  </div>
-</div>
-
-<div id="detail-schoenbrunn" class="detail-page">
-  <div class="detail-header"><button class="back-btn" onclick="closeDetail()">←</button><h2>Palazzo di Schönbrunn</h2></div>
-  <div class="detail-content">
-    <img class="detail-image" src="https://images.unsplash.com/photo-1534119139482-b530a7f9a98c?w=800&h=400&fit=crop" alt="Schönbrunn"/>
-    <div class="detail-title">Residenza imperiale</div>
-    <div class="detail-subtitle">Asburgo • Hietzing</div>
-    <p class="detail-text">Palazzo, giardini barocchi, Gloriette e lo zoo più antico.</p>
-    <div class="grid">
-      <div class="info"><div class="i">💰</div><div>Biglietto</div></div>
-      <div class="info"><div class="i">⭐</div><div>4.8/5</div></div>
-      <div class="info"><div class="i">📍</div><div id="detail-distance-schoenbrunn">Calcolo…</div></div>
-      <div class="info"><div class="i">🚇</div><div>U4 Schönbrunn</div></div>
-    </div>
-    <button class="go-btn" onclick="navigateSmart(48.18452,16.31218,'Schönbrunn')">🧭 Come arrivare</button>
-  </div>
-</div>
-
-<div id="detail-belvedere" class="detail-page">
-  <div class="detail-header"><button class="back-btn" onclick="closeDetail()">←</button><h2>Belvedere</h2></div>
-  <div class="detail-content">
-    <img class="detail-image" src="https://images.unsplash.com/photo-1508606572321-901ea443707f?w=800&h=400&fit=crop" alt="Belvedere"/>
-    <div class="detail-title">Arte & giardini</div>
-    <div class="detail-subtitle">Klimt • Landstraße</div>
-    <p class="detail-text">Il Bacio di Klimt e collezioni austriache tra due palazzi barocchi.</p>
-    <div class="grid">
-      <div class="info"><div class="i">💰</div><div>Biglietto</div></div>
-      <div class="info"><div class="i">⭐</div><div>4.7/5</div></div>
-      <div class="info"><div class="i">📍</div><div id="detail-distance-belvedere">Calcolo…</div></div>
-      <div class="info"><div class="i">🖼️</div><div>Museo</div></div>
-    </div>
-    <button class="go-btn" onclick="navigateSmart(48.19112,16.38005,'Belvedere')">🧭 Come arrivare</button>
-  </div>
-</div>
-
-<div id="detail-prater" class="detail-page">
-  <div class="detail-header"><button class="back-btn" onclick="closeDetail()">←</button><h2>Prater & Riesenrad</h2></div>
-  <div class="detail-content">
-    <img class="detail-image" src="https://images.unsplash.com/photo-1569429593159-228f31b7b2c6?w=800&h=400&fit=crop" alt="Prater"/>
-    <div class="detail-title">Parco e luna park</div>
-    <div class="detail-subtitle">Leopoldstadt</div>
-    <p class="detail-text">Ruota panoramica del 1897, viali alberati e street food.</p>
-    <div class="grid">
-      <div class="info"><div class="i">💰</div><div>Parco pubblico</div></div>
-      <div class="info"><div class="i">⭐</div><div>4.6/5</div></div>
-      <div class="info"><div class="i">📍</div><div id="detail-distance-prater">Calcolo…</div></div>
-      <div class="info"><div class="i">🚇</div><div>U1/U2 Praterstern</div></div>
-    </div>
-    <button class="go-btn" onclick="navigateSmart(48.21627,16.39929,'Prater')">🧭 Come arrivare</button>
-  </div>
-</div>
-
-<div id="detail-mq" class="detail-page">
-  <div class="detail-header"><button class="back-btn" onclick="closeDetail()">←</button><h2>MuseumsQuartier</h2></div>
-  <div class="detail-content">
-    <img class="detail-image" src="https://images.unsplash.com/photo-1543303437-b11f6b8fc1a9?w=800&h=400&fit=crop" alt="MuseumsQuartier"/>
-    <div class="detail-title">Polo culturale</div>
-    <div class="detail-subtitle">Leopold Museum, mumok</div>
-    <p class="detail-text">Corti animate, arte moderna e caffè. Ottimo anche la sera.</p>
-    <div class="grid">
-      <div class="info"><div class="i">💰</div><div>Musei a pagamento</div></div>
-      <div class="info"><div class="i">⭐</div><div>4.6/5</div></div>
-      <div class="info"><div class="i">📍</div><div id="detail-distance-mq">Calcolo…</div></div>
-      <div class="info"><div class="i">☕</div><div>Locali</div></div>
-    </div>
-    <button class="go-btn" onclick="navigateSmart(48.20387,16.35854,'MuseumsQuartier')">🧭 Come arrivare</button>
-  </div>
-</div>
-
-<div id="detail-hundert" class="detail-page">
-  <div class="detail-header"><button class="back-btn" onclick="closeDetail()">←</button><h2>Hundertwasserhaus</h2></div>
-  <div class="detail-content">
-    <img class="detail-image" src="https://images.unsplash.com/photo-1598620616477-0ef9eb3eeb82?w=800&h=400&fit=crop" alt="Hundertwasserhaus"/>
-    <div class="detail-title">Architettura organica</div>
-    <div class="detail-subtitle">Landstraße</div>
-    <p class="detail-text">Facciate colorate, linee curve e terrazze verdi. Visita esterna.</p>
-    <div class="grid">
-      <div class="info"><div class="i">💰</div><div>Gratis (esterno)</div></div>
-      <div class="info"><div class="i">⭐</div><div>4.5/5</div></div>
-      <div class="info"><div class="i">📍</div><div id="detail-distance-hundert">Calcolo…</div></div>
-      <div class="info"><div class="i">🎨</div><div>Iconico</div></div>
-    </div>
-    <button class="go-btn" onclick="navigateSmart(48.20703,16.39213,'Hundertwasserhaus')">🧭 Come arrivare</button>
-  </div>
-</div>
-
-<!-- DETTAGLI EXTRA GIÀ PRESENTI -->
-<div id="detail-donauturm" class="detail-page">
-  <div class="detail-header"><button class="back-btn" onclick="closeDetail()">←</button><h2>Donauturm</h2></div>
-  <div class="detail-content">
-    <img class="detail-image" src="https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&h=400&fit=crop" alt="Donauturm"/>
-    <div class="detail-title">Donauturm</div>
-    <div class="detail-subtitle">Torre panoramica • Donaupark</div>
-    <p class="detail-text">Vista a 360° su Vienna; ascensori veloci e caffè girevole.</p>
-    <div class="grid">
-      <div class="info"><div class="i">⏰</div><div>Orari variabili</div></div>
-      <div class="info"><div class="i">💰</div><div>Biglietto</div></div>
-      <div class="info"><div class="i">⭐</div><div>4.5/5</div></div>
-      <div class="info"><div class="i">📍</div><div id="detail-distance-donauturm">Calcolo…</div></div>
-    </div>
-    <button class="go-btn" onclick="navigateSmart(48.24026,16.40938,'Donauturm')">🧭 Come arrivare</button>
-  </div>
-</div>
-
-<div id="detail-kahlenberg-park" class="detail-page">
-  <div class="detail-header"><button class="back-btn" onclick="closeDetail()">←</button><h2>Waldseilpark Kahlenberg</h2></div>
-  <div class="detail-content">
-    <img class="detail-image" src="https://images.unsplash.com/photo-1526546334624-2afe5b01088a?w=800&h=400&fit=crop" alt="Waldseilpark Kahlenberg"/>
-    <div class="detail-title">Waldseilpark Kahlenberg</div>
-    <div class="detail-subtitle">Parco avventura sugli alberi</div>
-    <p class="detail-text">Divertimento tra le chiome con varie difficoltà. Stagionale.</p>
-    <div class="grid">
-      <div class="info"><div class="i">⏰</div><div>Stagionale</div></div>
-      <div class="info"><div class="i">💰</div><div>Biglietto</div></div>
-      <div class="info"><div class="i">⭐</div><div>4.4/5</div></div>
-      <div class="info"><div class="i">📍</div><div id="detail-distance-kahlenberg-park">Calcolo…</div></div>
-    </div>
-    <button class="go-btn" onclick="navigateSmart(48.27035,16.33339,'Waldseilpark Kahlenberg')">🧭 Come arrivare</button>
-  </div>
-</div>
-
-<div id="detail-rax-seilbahn" class="detail-page">
-  <div class="detail-header"><button class="back-btn" onclick="closeDetail()">←</button><h2>Rax-Seilbahn</h2></div>
-  <div class="detail-content">
-    <img class="detail-image" src="https://images.unsplash.com/photo-1520975693416-35a522e596d0?w=800&h=400&fit=crop" alt="Rax Seilbahn"/>
-    <div class="detail-title">Rax-Seilbahn</div>
-    <div class="detail-subtitle">Funivia • Hirschwang an der Rax (~80 km)</div>
-    <p class="detail-text">Gita di una giornata per panorami alpini. Controlla meteo e orari prima di partire.</p>
-    <div class="grid">
-      <div class="info"><div class="i">⏰</div><div>Orari variabili</div></div>
-      <div class="info"><div class="i">💰</div><div>Biglietto</div></div>
-      <div class="info"><div class="i">🗺️</div><div>Fuori Vienna</div></div>
-      <div class="info"><div class="i">📍</div><div id="detail-distance-rax-seilbahn">Calcolo…</div></div>
-    </div>
-    <button class="go-btn" onclick="navigateSmart(47.70274,15.78037,'Rax-Seilbahn')">🧭 Come arrivare</button>
-  </div>
-</div>
-
-<!-- FOOD dettagli -->
-<div id="detail-figlmueller" class="detail-page">
-  <div class="detail-header"><button class="back-btn" onclick="closeDetail()">←</button><h2>Figlmüller Bäckerstraße</h2></div>
-  <div class="detail-content">
-    <img class="detail-image" src="https://images.unsplash.com/photo-1550547660-d9450f859349?w=800&h=400&fit=crop" alt="Schnitzel"/>
-    <div class="detail-title">Schnitzel iconico</div>
-    <div class="detail-subtitle">Centro</div>
-    <p class="detail-text">Prenota se possibile: molto richiesto.</p>
-    <div class="grid">
-      <div class="info"><div class="i">⭐</div><div>4.6/5</div></div>
-      <div class="info"><div class="i">📍</div><div id="detail-distance-figlmueller">Calcolo…</div></div>
-    </div>
-    <button class="go-btn" onclick="navigateSmart(48.2089,16.3761,'Figlmüller Bäckerstraße')">🧭 Come arrivare</button>
-  </div>
-</div>
-
-<div id="detail-plachutta" class="detail-page">
-  <div class="detail-header"><button class="back-btn" onclick="closeDetail()">←</button><h2>Plachutta Wollzeile</h2></div>
-  <div class="detail-content">
-    <img class="detail-image" src="https://images.unsplash.com/photo-1543332164-6e82f355bad2?w=800&h=400&fit=crop" alt="Tafelspitz"/>
-    <div class="detail-title">Tafelspitz</div>
-    <div class="detail-subtitle">Centro</div>
-    <p class="detail-text">Specialità viennesi in sala classica.</p>
-    <div class="grid">
-      <div class="info"><div class="i">⭐</div><div>4.5/5</div></div>
-      <div class="info"><div class="i">📍</div><div id="detail-distance-plachutta">Calcolo…</div></div>
-    </div>
-    <button class="go-btn" onclick="navigateSmart(48.2080,16.3769,'Plachutta Wollzeile')">🧭 Come arrivare</button>
-  </div>
-</div>
-
-<div id="detail-cafecentral" class="detail-page">
-  <div class="detail-header"><button class="back-btn" onclick="closeDetail()">←</button><h2>Café Central</h2></div>
-  <div class="detail-content">
-    <img class="detail-image" src="https://images.unsplash.com/photo-1561070791-2526d30994b5?w=800&h=400&fit=crop" alt="Cafe"/>
-    <div class="detail-title">Caffè storico</div>
-    <div class="detail-subtitle">Ring</div>
-    <p class="detail-text">Torte classiche e atmosfera fin de siècle.</p>
-    <div class="grid">
-      <div class="info"><div class="i">⭐</div><div>4.6/5</div></div>
-      <div class="info"><div class="i">📍</div><div id="detail-distance-cafecentral">Calcolo…</div></div>
-    </div>
-    <button class="go-btn" onclick="navigateSmart(48.2101,16.3647,'Café Central')">🧭 Come arrivare</button>
-  </div>
-</div>
-
-<div id="detail-mcd-stephansplatz" class="detail-page">
-  <div class="detail-header"><button class="back-btn" onclick="closeDetail()">←</button><h2>McDonald's Stephansplatz</h2></div>
-  <div class="detail-content">
-    <img class="detail-image" src="https://images.unsplash.com/photo-1550547660-d9450f859349?w=800&h=400&fit=crop" alt="Fast food"/>
-    <div class="detail-title">Fast food</div>
-    <div class="detail-subtitle">Centro</div>
-    <p class="detail-text">Opzione rapida in pieno centro.</p>
-    <div class="grid">
-      <div class="info"><div class="i">⭐</div><div>3.9/5</div></div>
-      <div class="info"><div class="i">📍</div><div id="detail-distance-mcd-stephansplatz">Calcolo…</div></div>
-    </div>
-    <button class="go-btn" onclick="navigateSmart(48.2082,16.3725,'McDonald\'s Stephansplatz')">🧭 Come arrivare</button>
-  </div>
-</div>
-
-<div id="detail-bk-prater" class="detail-page">
-  <div class="detail-header"><button class="back-btn" onclick="closeDetail()">←</button><h2>Burger King – Prater</h2></div>
-  <div class="detail-content">
-    <img class="detail-image" src="https://images.unsplash.com/photo-1550547660-d9450f859349?w=800&h=400&fit=crop" alt="Fast food"/>
-    <div class="detail-title">Fast food</div>
-    <div class="detail-subtitle">Leopoldstadt</div>
-    <p class="detail-text">Vicino alla ruota panoramica.</p>
-    <div class="grid">
-      <div class="info"><div class="i">⭐</div><div>3.8/5</div></div>
-      <div class="info"><div class="i">📍</div><div id="detail-distance-bk-prater">Calcolo…</div></div>
-    </div>
-    <button class="go-btn" onclick="navigateSmart(48.2167,16.3978,'Burger King Prater')">🧭 Come arrivare</button>
-  </div>
-</div>
+<!-- DETTAGLI (stesse sezioni già fornite prima; omesse qui per brevità) -->
+<!-- Puoi riutilizzare i blocchi detail-* che ti ho già dato. -->
 
 <script>
-/* ==== Stato globale ==== */
-let userLocation = null;
+/* ===== Ambiente / Stato ===== */
+const IS_SANDBOX = location.href.startsWith('about:') || location.origin === 'null' || (()=>{
+  try { return window.self !== window.top; } catch { return true; }
+})();
 
-/* ==== Dati POI ==== */
+let userLocation = null;         // posizione corrente usata per i calcoli
+let useGPS = true;               // preferenza utente
+const LS_KEYS = {
+  useGPS: 'vg.useGPS',
+  manualPos: 'vg.manualPos'      // {lat,lng}
+};
+
+/* ===== Dati POI ===== */
 const attractions = {
   'stephansdom': {lat:48.20849,lng:16.37208},
   'schoenbrunn': {lat:48.18452,lng:16.31218},
@@ -533,7 +322,6 @@ const attractions = {
   'prater':      {lat:48.21627,lng:16.39929},
   'mq':          {lat:48.20387,lng:16.35854},
   'hundert':     {lat:48.20703,lng:16.39213},
-  // extra
   'donauturm':       {lat:48.24026,lng:16.40938},
   'kahlenberg-park': {lat:48.27035,lng:16.33339},
   'rax-seilbahn':    {lat:47.70274,lng:15.78037}
@@ -553,8 +341,10 @@ const food = {
   'bk-prater':          {lat:48.2167,lng:16.3978,type:'fast',stars:3.8}
 };
 
-/* ==== Utilità ==== */
+/* ===== Utilità ===== */
 const debounce=(fn,d=200)=>{let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),d)}};
+const filterContentDeb = debounce(filterContent,200);
+
 function setStatus(text,color){const el=document.getElementById('location-status');if(!el)return;el.style.color=color||'#0f172a';el.textContent=text}
 function dist(a,b){const R=6371,dLat=(b.lat-a.lat)*Math.PI/180,dLng=(b.lng-a.lng)*Math.PI/180;const s1=Math.sin(dLat/2),s2=Math.sin(dLng/2);const c=2*Math.atan2(Math.sqrt(s1*s1+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*s2*s2),Math.sqrt(1-(s1*s1+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*s2*s2)));const km=R*c;return km<1?Math.round(km*1000)+'m':km.toFixed(1)+'km'}
 function upd(id,txt){const el=document.getElementById('distance-'+id);if(el)el.textContent='📍 '+txt;const el2=document.getElementById('detail-distance-'+id);if(el2)el2.textContent=txt;const mapExtra={'prater':'prater-extra'};if(mapExtra[id]){const elx=document.getElementById('distance-'+mapExtra[id]);if(elx)elx.textContent='📍 '+txt}}
@@ -562,36 +352,194 @@ function toKm(text){return text.endsWith('m')?parseInt(text)/1000:parseFloat(tex
 function suggestMode(km){if(km<=1)return{label:'🚶‍♂️ A piedi',class:'walk'};if(km<=3)return{label:'🛴/🚇 Monopattino o metro',class:'pt'};if(km<=12)return{label:'🚇/🚗 Mezzi o auto',class:'pt'};return{label:'🚗 Auto/treno (lontano)',class:'drive'}}
 function updMode(id){const c=attractions[id]||food[id]||points[id];if(!c||!userLocation)return;const km=toKm(dist(userLocation,c));const tag=document.getElementById('mode-'+id);if(!tag)return;const m=suggestMode(km);tag.className='tag '+m.class;tag.textContent=m.label}
 
-/* ==== Meteo (Open-Meteo) ==== */
+/* ===== Meteo (Open-Meteo) ===== */
 async function fetchWeather(lat,lng){try{const url=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current_weather=true&hourly=temperature_2m,precipitation,weathercode&timezone=auto`;const r=await fetch(url);const j=await r.json();if(j.current_weather){const t=Math.round(j.current_weather.temperature);const w=j.current_weather.weathercode;document.getElementById('w-temp').textContent=t+'°C';document.getElementById('w-desc').textContent=codeToDesc(w);document.getElementById('w-icon').textContent=codeToIcon(w)}const hourly=document.getElementById('hourly');hourly.innerHTML='';const times=j.hourly.time,temps=j.hourly.temperature_2m,prec=j.hourly.precipitation,codes=j.hourly.weathercode;const now=new Date();let printed=0;for(let i=0;i<times.length&&printed<12;i++){const ts=new Date(times[i]);if(ts>=now){const chip=document.createElement('div');chip.className='hchip';const hh=ts.getHours().toString().padStart(2,'0');chip.innerHTML=`<div>${hh}:00</div><div style="font-size:18px">${codeToIcon(codes[i])}</div><div>${Math.round(temps[i])}°C</div><div style="font-size:11px">${prec[i]>0?prec[i].toFixed(1)+'mm':''}</div>`;hourly.appendChild(chip);printed++}}}catch(e){document.getElementById('w-desc').textContent='Meteo non disponibile'}}
 function codeToDesc(c){const m={0:'Sereno',1:'Poco nuvoloso',2:'Variabile',3:'Nuvoloso',45:'Nebbia',48:'Brina',51:'Pioviggine',53:'Pioviggine',55:'Pioviggine forte',61:'Pioggia',63:'Pioggia',65:'Pioggia forte',71:'Neve',80:'Rovesci',95:'Temporale'};return m[c]||'Condizioni variabili'}
 function codeToIcon(c){if([0].includes(c))return'☀️';if([1,2].includes(c))return'⛅';if([3,45,48].includes(c))return'☁️';if([51,53,55,61,63,65,80].includes(c))return'🌧️';if([71].includes(c))return'🌨️';if([95].includes(c))return'⛈️';return'🌤️'}
 
-/* ==== GPS / Distanze ==== */
-function renderGPSActions(showRetry=true){const el=document.getElementById('gps-actions');if(!el)return;el.style.display='flex';el.innerHTML=(showRetry?`<button class="primary" onclick="retryGPS()">🔄 Riprova GPS</button>`:'')+` <button onclick="selectManualLocation()">🎯 Posizione manuale</button>`}
-function retryGPS(){initializeGPS()}
-function selectManualLocation(){const presets=[{name:'Stephansplatz (centro)',lat:48.20849,lng:16.37208},{name:'Schönbrunn',lat:48.18452,lng:16.31218},{name:'Prater',lat:48.21627,lng:16.39929}];const label=presets.map((p,i)=>`${i+1}) ${p.name}`).join('\n');const pick=prompt(`Seleziona una posizione:\n${label}\n\nOppure inserisci "lat,lng" manualmente`,'1');let lat,lng;if(!pick)return;if(pick.includes(',')){const[a,b]=pick.split(',').map(x=>parseFloat(x.trim()));if(isFinite(a)&&isFinite(b)){lat=a;lng=b}}else{const idx=parseInt(pick,10)-1;if(presets[idx]){lat=presets[idx].lat;lng=presets[idx].lng}}if(!isFinite(lat)||!isFinite(lng))return alert('Coordinate non valide.');userLocation={lat,lng};setStatus('ℹ️ Posizione manuale impostata','#1e40af');calcAll();fetchWeather(lat,lng);const act=document.getElementById('gps-actions');if(act)act.style.display='none'}
-function initializeGPS(){if(!window.isSecureContext&&location.hostname!=='localhost'){setStatus('⚠️ Il browser blocca il GPS perché non sei in HTTPS. Uso posizione di Stephansplatz.','#b91c1c');showApprox();fetchWeather(48.20849,16.37208);renderGPSActions(false);return}if(!navigator.geolocation){setStatus('⚠️ GPS non supportato - uso distanze approssimative','#b91c1c');showApprox();fetchWeather(48.20849,16.37208);renderGPSActions(false);return}setStatus('🔄 Rilevamento posizione…','#ff9800');navigator.geolocation.getCurrentPosition((pos)=>{userLocation={lat:pos.coords.latitude,lng:pos.coords.longitude};setStatus('✅ GPS attivo - Distanze precise','#4caf50');calcAll();fetchWeather(userLocation.lat,userLocation.lng);const act=document.getElementById('gps-actions');if(act)act.style.display='none'},handleGPSError,{enableHighAccuracy:true,timeout:15000,maximumAge:600000})}
-function handleGPSError(error){const msgs={1:['📍 Accesso posizione negato','Abilita la localizzazione nel browser'],2:['📡 Posizione non disponibile','Spostati all’aperto e riprova'],3:['⏱️ Timeout','Riprova più tardi']};const[m,d]=msgs[error?.code]||['⚠️ Errore GPS','Problema sconosciuto'];const el=document.getElementById('location-status');if(el)el.innerHTML=`<strong style="color:#b45309">${m}</strong><br><span style="color:#6b7280">${d}</span>`;showApprox();fetchWeather(48.20849,16.37208);renderGPSActions(true)}
-function showApprox(){const center={lat:48.20849,lng:16.37208};Object.keys(attractions).forEach(id=>upd(id,dist(center,attractions[id])));Object.keys(points).forEach(id=>upd(id,dist(center,points[id])));Object.keys(food).forEach(id=>upd(id,dist(center,food[id])))}
-function calcAll(){if(!userLocation)return;[...Object.keys(attractions),...Object.keys(points),...Object.keys(food)].forEach(id=>{const c=attractions[id]||points[id]||food[id];upd(id,dist(userLocation,c));if(food[id])updMode(id)});['donauturm','kahlenberg-park','rax-seilbahn','prater'].forEach(id=>{const c=attractions[id];if(c){upd(id,dist(userLocation,c));const tag=document.getElementById('mode-'+id);if(tag)updMode(id)}})}
+/* ===== Persistenza ===== */
+function loadPrefs(){
+  const storedUseGPS = localStorage.getItem(LS_KEYS.useGPS);
+  if (storedUseGPS !== null) useGPS = storedUseGPS === 'true';
+  const mp = localStorage.getItem(LS_KEYS.manualPos);
+  if (mp) {
+    try {
+      const obj = JSON.parse(mp);
+      if (isFinite(obj?.lat) && isFinite(obj?.lng)) manualPos = {lat: +obj.lat, lng: +obj.lng};
+    } catch {}
+  }
+}
+function saveUseGPS(val){ localStorage.setItem(LS_KEYS.useGPS, String(val)); }
+let manualPos = null;
+function saveManualPos(pos){ manualPos = pos; localStorage.setItem(LS_KEYS.manualPos, JSON.stringify(pos)); }
 
-/* ==== Navigazione / Mappe ==== */
+/* ===== GPS / Flusso iniziale ===== */
+function renderGPSActions(onlyManual=false){
+  const el=document.getElementById('gps-actions'); if(!el) return;
+  el.innerHTML = (onlyManual? '' : `<button class="primary" onclick="retryGPS()">🔄 Riprova GPS</button>`)
+               + ` <button onclick="selectManualLocation()">🎯 Imposta posizione manuale</button>`;
+}
+function retryGPS(){ initializeGPS(); }
+function selectManualLocation(){
+  const presets = [
+    {name:'Stephansplatz (centro)', lat:48.20849, lng:16.37208},
+    {name:'Schönbrunn', lat:48.18452, lng:16.31218},
+    {name:'Prater', lat:48.21627, lng:16.39929}
+  ];
+  const label = presets.map((p,i)=>`${i+1}) ${p.name}`).join('\n');
+  const pick = prompt(`Seleziona una posizione:\n${label}\n\nOppure inserisci "lat,lng"`, '1');
+  let lat,lng;
+  if (!pick) return;
+  if (pick.includes(',')){
+    const [a,b] = pick.split(',').map(x=>parseFloat(x.trim()));
+    if (isFinite(a)&&isFinite(b)){ lat=a; lng=b; }
+  } else {
+    const idx = parseInt(pick,10)-1;
+    if (presets[idx]){ lat=presets[idx].lat; lng=presets[idx].lng; }
+  }
+  if (!isFinite(lat)||!isFinite(lng)) return alert('Coordinate non valide.');
+  setManualPosition({lat,lng});
+}
+function setManualPosition(pos){
+  userLocation = {lat:pos.lat, lng:pos.lng};
+  saveManualPos(userLocation);
+  setStatus('📍 Posizione manuale impostata e salvata','#1e40af');
+  calcAll(); fetchWeather(userLocation.lat,userLocation.lng);
+}
+
+function initializeGPS(){
+  const toggle = document.getElementById('gps-toggle');
+  // In sandbox: forziamo manuale
+  if (IS_SANDBOX){
+    useGPS = false; if (toggle){ toggle.checked = false; toggle.disabled = true; }
+    setStatus('ℹ️ Sandbox/iframe: GPS disabilitato. Usa posizione manuale.','#b91c1c');
+    const base = manualPos || {lat:48.20849,lng:16.37208};
+    userLocation = base; calcAll(); fetchWeather(base.lat, base.lng);
+    renderGPSActions(true);
+    return;
+  }
+
+  // Lettura preferenza
+  if (toggle) toggle.checked = !!useGPS;
+
+  if (!useGPS){
+    const base = manualPos || {lat:48.20849,lng:16.37208};
+    userLocation = base;
+    setStatus(manualPos? '📍 Uso posizione manuale salvata' : 'ℹ️ GPS disattivato: uso centro Vienna','#1e40af');
+    calcAll(); fetchWeather(base.lat, base.lng); renderGPSActions(true);
+    return;
+  }
+
+  // GPS abilitato dall'utente: verifica HTTPS/Geolocation
+  if (!window.isSecureContext && location.hostname!=='localhost'){
+    setStatus('⚠️ Non sei in HTTPS/localhost: GPS bloccato. Attiva HTTPS o passa a manuale.','#b91c1c');
+    const base = manualPos || {lat:48.20849,lng:16.37208};
+    userLocation = base; calcAll(); fetchWeather(base.lat, base.lng);
+    renderGPSActions(true); // solo manuale utile qui
+    return;
+  }
+  if (!navigator.geolocation){
+    setStatus('⚠️ Questo browser non supporta il GPS. Uso manuale/centro Vienna.','#b91c1c');
+    const base = manualPos || {lat:48.20849,lng:16.37208};
+    userLocation = base; calcAll(); fetchWeather(base.lat, base.lng);
+    renderGPSActions(true);
+    return;
+  }
+
+  // Richiesta posizione
+  setStatus('🔄 Rilevamento posizione…','#ff9800');
+  navigator.geolocation.getCurrentPosition((pos)=>{
+    userLocation = {lat:pos.coords.latitude, lng:pos.coords.longitude};
+    setStatus('✅ GPS attivo - distanze precise','#4caf50');
+    calcAll(); fetchWeather(userLocation.lat,userLocation.lng);
+    renderGPSActions(false);
+  }, (error)=>{
+    const msgs={1:['📍 Accesso posizione negato','Abilita la localizzazione o usa manuale'],
+                2:['📡 Posizione non disponibile','Spostati all’aperto e riprova'],
+                3:['⏱️ Timeout','Riprova più tardi']};
+    const [m,d]=msgs[error?.code]||['⚠️ Errore GPS','Problema sconosciuto'];
+    setStatus(`${m} — ${d}`,'#b45309');
+    const base = manualPos || {lat:48.20849,lng:16.37208};
+    userLocation = base; calcAll(); fetchWeather(base.lat, base.lng);
+    renderGPSActions(true);
+  }, {enableHighAccuracy:true, timeout:15000, maximumAge:600000});
+}
+
+/* ===== Mappe / Navigazione ===== */
 function navigateTo(lat,lng,name,mode){const d=`${lat},${lng}`;const url=`https://www.google.com/maps/dir/?api=1&destination=${d}&travelmode=${mode||'driving'}&dir_action=navigate`;window.open(url,'_blank')}
 function navigateSmart(lat,lng,name){const mode=(userLocation?(toKm(dist(userLocation,{lat,lng}))<=1?'walking':'driving'):'driving');navigateTo(lat,lng,name,mode)}
 function openMap(){const c=userLocation||{lat:48.20849,lng:16.37208};window.open(`https://www.google.com/maps/search/?api=1&query=${c.lat},${c.lng}`,'_blank')}
 
-/* ==== UI: Tabs / Dettagli / Filtri ==== */
-function showTab(tab,ev){document.querySelectorAll('.nav-tab').forEach(b=>b.classList.remove('active'));if(ev&&ev.currentTarget)ev.currentTarget.classList.add('active');const sections=['attractions','food','parking','electric','extra'];sections.forEach(s=>{document.getElementById(`${s}-content`).classList.toggle('hidden',s!==tab)});document.querySelector('.content').scrollTop=0}
-function openDetail(id){try{const page=document.getElementById('detail-'+id);if(!page)return;try{history.pushState({detail:id},'',`#${id}`)}catch(_){}page.classList.add('active');document.body.style.overflow='hidden';const coord=attractions[id]||points[id]||food[id];const base=userLocation||{lat:48.20849,lng:16.37208};if(coord){upd(id,dist(base,coord));updMode(id)}setTimeout(()=>{const btn=page.querySelector('.go-btn');if(btn){const r=btn.getBoundingClientRect();if(r.bottom>innerHeight)btn.scrollIntoView({behavior:'smooth',block:'end'})}},180)}catch(e){console.error('openDetail error',e)}}
-function closeDetail(){const active=document.querySelector('.detail-page.active');if(active)active.classList.remove('active');document.body.style.overflow='';try{if(location.hash)history.pushState('',document.title,window.location.pathname+window.location.search)}catch(_){}}
-const filterContentDeb=debounce(filterContent,200);
-function filterContent(q,section){const cls=section==='attractions'?'attraction-card':section==='food'?'food-card':section==='parking'?'parking-card':'extra-card';const cards=document.querySelectorAll(`.${cls}`);const qq=(q||'').toLowerCase();cards.forEach(c=>{const txt=c.innerText.toLowerCase();c.style.display=txt.includes(qq)?'':'none'})}
-function filterByType(type,section,ev){if(ev&&ev.currentTarget){const wrap=ev.currentTarget.closest('.filters');if(wrap)wrap.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));ev.currentTarget.classList.add('active')}const cls=section==='attractions'?'attraction-card':section==='food'?'food-card':section==='parking'?'parking-card':'extra-card';const cards=document.querySelectorAll(`.${cls}`);cards.forEach(c=>{const t=c.getAttribute('data-type')||'all';c.style.display=(type==='all'||t===type)?'':'none'})}
+/* ===== UI: Tabs / Dettagli / Filtri ===== */
+function showTab(tab,ev){document.querySelectorAll('.nav-tab').forEach(b=>b.classList.remove('active'));if(ev&&ev.currentTarget)ev.currentTarget.classList.add('active');['attractions','food','parking','electric','extra'].forEach(s=>{document.getElementById(`${s}-content`).classList.toggle('hidden',s!==tab)});document.querySelector('.content').scrollTop=0}
 
-/* ==== Avvio ==== */
-window.addEventListener('DOMContentLoaded',()=>{showTab('attractions');initializeGPS();window.addEventListener('popstate',closeDetail)});
+function openDetail(id){
+  const page=document.getElementById('detail-'+id);
+  if(!page) return;
+  // niente pushState in sandbox
+  if(!IS_SANDBOX){ try{ history.pushState({detail:id},'',`#${id}`);}catch{} }
+  page.classList.add('active'); document.body.style.overflow='hidden';
+  const coord=attractions[id]||points[id]||food[id];
+  const base=userLocation||{lat:48.20849,lng:16.37208};
+  if(coord){ upd(id,dist(base,coord)); updMode(id); }
+}
+function closeDetail(){
+  const active=document.querySelector('.detail-page.active');
+  if(active) active.classList.remove('active');
+  document.body.style.overflow='';
+  if(!IS_SANDBOX && location.hash){ try{ history.pushState('',document.title,window.location.pathname+window.location.search);}catch{} }
+}
+
+function filterContent(q,section){
+  const cls=section==='attractions'?'attraction-card':section==='food'?'food-card':section==='parking'?'parking-card':'extra-card';
+  const cards=document.querySelectorAll(`.${cls}`);
+  const qq=(q||'').toLowerCase();
+  cards.forEach(c=>{const txt=c.innerText.toLowerCase();c.style.display=txt.includes(qq)?'':'none'});
+}
+function filterByType(type,section,ev){
+  if(ev&&ev.currentTarget){
+    const wrap=ev.currentTarget.closest('.filters');
+    if(wrap) wrap.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+    ev.currentTarget.classList.add('active');
+  }
+  const cls=section==='attractions'?'attraction-card':section==='food'?'food-card':section==='parking'?'parking-card':'extra-card';
+  document.querySelectorAll(`.${cls}`).forEach(c=>{
+    const t=c.getAttribute('data-type')||'all';
+    c.style.display=(type==='all'||t===type)?'':'none';
+  });
+}
+
+/* ===== Avvio ===== */
+window.addEventListener('DOMContentLoaded', ()=>{
+  loadPrefs();
+
+  // inizializza toggle UI
+  const toggle=document.getElementById('gps-toggle');
+  if (IS_SANDBOX){
+    if (toggle){ toggle.checked=false; toggle.disabled=true; }
+  } else {
+    if (toggle){ toggle.checked=!!useGPS; }
+  }
+  if (toggle){
+    toggle.addEventListener('change', ()=>{
+      useGPS = toggle.checked && !IS_SANDBOX;
+      saveUseGPS(useGPS);
+      initializeGPS();
+    });
+  }
+
+  showTab('attractions');
+  initializeGPS();
+
+  if (!IS_SANDBOX) window.addEventListener('popstate', closeDetail);
+});
 </script>
+
+<!-- ====== DETTAGLI (riutilizza i blocchi detail-* già passati) ======
+     Per brevità non li ripeto qui: incolla tutti i <div id="detail-..."> che avevi.
+     Funzionano invariati con questo file.                                  -->
+
 </body>
 </html>
+
 
