@@ -44,7 +44,6 @@
     .filter-btn.active{background:#1a237e;color:#fff;border-color:#1a237e}
     .floating-btn{position:fixed;bottom:20px;right:20px;width:56px;height:56px;background:#1a237e;border:none;border-radius:50%;color:#fff;font-size:24px;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.25);transition:.2s;z-index:1000}
     .floating-btn:hover{transform:scale(1.08)}
-
     /* Detail pages */
     .detail-page{position:absolute;top:0;left:0;width:100%;height:100%;background:#fff;z-index:1000;transform:translateX(100%);transition:transform .28s ease;overflow-y:auto}
     .detail-page.active{transform:translateX(0)}
@@ -59,9 +58,7 @@
     .info{background:#f8fafc;padding:14px;border-radius:10px;text-align:center}
     .info .i{font-size:22px;margin-bottom:6px}
     .go-btn{width:100%;background:linear-gradient(135deg,#2e7d32,#43a047);color:#fff;border:none;padding:14px;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;margin-top:16px}
-
     .notice{background:#e3f2fd;padding:10px;border-radius:10px;margin-bottom:12px;border-left:4px solid #2196f3;font-size:13px;color:#0f172a}
-
     /* Weather */
     .weather{display:flex;gap:10px;align-items:center;background:#eef2ff;border:1px solid #c7d2fe;border-left:4px solid #6366f1;padding:10px;border-radius:12px;margin:10px 0}
     .weather .now{display:flex;align-items:center;gap:10px}
@@ -69,6 +66,9 @@
     .weather .desc{font-size:12px;color:#374151}
     .hourly{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-top:8px}
     .hchip{min-width:64px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:10px;padding:6px;text-align:center;font-size:12px}
+    .actions{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0}
+    .actions button{padding:8px 10px;border:1px solid #e5e7eb;border-radius:10px;background:#f3f4f6;cursor:pointer;font-size:12px}
+    .actions button.primary{background:#1a237e;color:#fff;border-color:#1a237e}
   </style>
 </head>
 <body>
@@ -100,6 +100,11 @@
     <div id="hourly" class="hourly"></div>
 
     <div class="notice" id="location-status">📍 Attivazione GPS per calcolo distanze…</div>
+    <!-- Leave ONLY one gps-actions block -->
+    <div class="actions" id="gps-actions">
+      <button class="primary" onclick="retryGPS()">🔄 Riprova GPS</button>
+      <button onclick="selectManualLocation()">🎯 Posizione manuale</button>
+    </div>
 
     <!-- ATTRAZIONI -->
     <section id="attractions-content">
@@ -228,16 +233,19 @@
         <button class="filter-btn" onclick="filterByType('garage','electric',event)">In garage</button>
       </div>
       <div class="notice">ℹ️ Le tariffe e l'accesso possono variare. Verifica sempre sull'app del gestore.</div>
+
       <article class="card parking-card" data-type="fast" data-id="wien-energie-rathaus" onclick="openDetail('wien-energie-rathaus')">
         <div class="card-header"><div class="card-icon electric-icon">⚡</div><div><div class="card-title">Wien Energie – Rathaus</div><div class="card-subtitle">Ricarica AC/DC • Centro</div></div></div>
         <p class="card-description">Accesso con app Wien Energie o RFID.</p>
         <div class="card-info"><span class="tag fast">AC/DC</span><span class="tag">💳 App/RFID</span><span class="distance" id="distance-wien-energie-rathaus">📍 Calcolo…</span></div>
       </article>
+
       <article class="card parking-card" data-type="garage" data-id="garage-karteis" onclick="openDetail('garage-karteis')">
         <div class="card-header"><div class="card-icon electric-icon">🔋</div><div><div class="card-title">Garage Kärntner Straße – EV</div><div class="card-subtitle">Sottosuolo • Centro</div></div></div>
         <p class="card-description">Stalli EV centrali, comodo per Stephansplatz.</p>
         <div class="card-info"><span class="tag">AC</span><span class="tag">Garage</span><span class="distance" id="distance-garage-karteis">📍 Calcolo…</span></div>
       </article>
+
       <article class="card parking-card" data-type="fast" data-id="tesla-vienna" onclick="openDetail('tesla-vienna')">
         <div class="card-header"><div class="card-icon electric-icon">⚡</div><div><div class="card-title">Tesla Supercharger – Vienna area</div><div class="card-subtitle">Rete Tesla • Extraurbano</div></div></div>
         <p class="card-description">Verifica disponibilità e potenza dall'app Tesla.</p>
@@ -283,8 +291,7 @@
   <button class="floating-btn" onclick="openMap()" title="Apri mappa">📍</button>
 </div>
 
-<!-- DETTAGLI (esempi già presenti sopra per attrazioni/parking/electric) -->
-<!-- Aggiungiamo dettagli extra essenziali per nuove voci -->
+<!-- DETTAGLI -->
 <div id="detail-donauturm" class="detail-page">
   <div class="detail-header"><button class="back-btn" onclick="closeDetail()">←</button><h2>Donauturm</h2></div>
   <div class="detail-content">
@@ -335,167 +342,490 @@
     <button class="go-btn" onclick="navigateSmart(47.70274,15.78037,'Rax-Seilbahn')">🧭 Come arrivare</button>
   </div>
 </div>
+  <!-- DETTAGLIO: Stephansdom -->
+<div id="detail-stephansdom" class="detail-page">
+  <div class="detail-header"><button class="back-btn" onclick="closeDetail()">←</button><h2>Cattedrale di Santo Stefano</h2></div>
+  <div class="detail-content">
+    <img class="detail-image" src="https://images.unsplash.com/photo-1543349689-9a4d426bee8e?w=400&h=200&fit=crop" alt="Stephansdom"/>
+    <div class="detail-title">Stephansdom</div>
+    <div class="detail-subtitle">Gotico • Centro storico</div>
+    <p class="detail-text">Il simbolo della città. Tetto policromo, torre sud panoramica.</p>
+    <div class="grid">
+      <div class="info"><div class="i">💰</div><div>Navata gratis</div></div>
+      <div class="info"><div class="i">⭐</div><div>4.7/5</div></div>
+      <div class="info"><div class="i">📍</div><div id="detail-distance-stephansdom">Calcolo…</div></div>
+      <div class="info"><div class="i">⛪</div><div>Storico</div></div>
+    </div>
+    <button class="go-btn" onclick="navigateSmart(48.20849,16.37208,'Stephansdom')">🧭 Come arrivare</button>
+  </div>
+</div>
 
-<!-- FOOD dettagli minimi (navigazione smart) -->
-<div id="detail-figlmueller" class="detail-page"><div class="detail-header"><button class="back-btn" onclick="closeDetail()">←</button><h2>Figlmüller Bäckerstraße</h2></div><div class="detail-content"><img class="detail-image" src="https://images.unsplash.com/photo-1550547660-d9450f859349?w=400&h=200&fit=crop" alt="Schnitzel"/><div class="detail-title">Schnitzel iconico</div><div class="detail-subtitle">Centro</div><p class="detail-text">Prenota se possibile: molto richiesto.</p><div class="grid"><div class="info"><div class="i">⭐</div><div>4.6/5</div></div><div class="info"><div class="i">📍</div><div id="detail-distance-figlmueller">Calcolo…</div></div></div><button class="go-btn" onclick="navigateSmart(48.2089,16.3761,'Figlmüller Bäckerstraße')">🧭 Come arrivare</button></div></div>
-<div id="detail-plachutta" class="detail-page"><div class="detail-header"><button class="back-btn" onclick="closeDetail()">←</button><h2>Plachutta Wollzeile</h2></div><div class="detail-content"><img class="detail-image" src="https://images.unsplash.com/photo-1543332164-6e82f355bad2?w=400&h=200&fit=crop" alt="Tafelspitz"/><div class="detail-title">Tafelspitz</div><div class="detail-subtitle">Centro</div><p class="detail-text">Specialità viennesi in sala classica.</p><div class="grid"><div class="info"><div class="i">⭐</div><div>4.5/5</div></div><div class="info"><div class="i">📍</div><div id="detail-distance-plachutta">Calcolo…</div></div></div><button class="go-btn" onclick="navigateSmart(48.2080,16.3769,'Plachutta Wollzeile')">🧭 Come arrivare</button></div></div>
-<div id="detail-cafecentral" class="detail-page"><div class="detail-header"><button class="back-btn" onclick="closeDetail()">←</button><h2>Café Central</h2></div><div class="detail-content"><img class="detail-image" src="https://images.unsplash.com/photo-1561070791-2526d30994b5?w=400&h=200&fit=crop" alt="Cafe"/><div class="detail-title">Caffè storico</div><div class="detail-subtitle">Ring</div><p class="detail-text">Torte classiche e atmosfera fin de siècle.</p><div class="grid"><div class="info"><div class="i">⭐</div><div>4.6/5</div></div><div class="info"><div class="i">📍</div><div id="detail-distance-cafecentral">Calcolo…</div></div></div><button class="go-btn" onclick="navigateSmart(48.2101,16.3647,'Café Central')">🧭 Come arrivare</button></div></div>
-<div id="detail-mcd-stephansplatz" class="detail-page"><div class="detail-header"><button class="back-btn" onclick="closeDetail()">←</button><h2>McDonald's Stephansplatz</h2></div><div class="detail-content"><img class="detail-image" src="https://images.unsplash.com/photo-1550547660-d9450f859349?w=400&h=200&fit=crop" alt="Fast food"/><div class="detail-title">Fast food</div><div class="detail-subtitle">Centro</div><p class="detail-text">Opzione rapida in pieno centro.</p><div class="grid"><div class="info"><div class="i">⭐</div><div>3.9/5</div></div><div class="info"><div class="i">📍</div><div id="detail-distance-mcd-stephansplatz">Calcolo…</div></div></div><button class="go-btn" onclick="navigateSmart(48.2082,16.3725,'McDonald\'s Stephansplatz')">🧭 Come arrivare</button></div></div>
-<div id="detail-bk-prater" class="detail-page"><div class="detail-header"><button class="back-btn" onclick="closeDetail()">←</button><h2>Burger King – Prater</h2></div><div class="detail-content"><img class="detail-image" src="https://images.unsplash.com/photo-1550547660-d9450f859349?w=400&h=200&fit=crop" alt="Fast food"/><div class="detail-title">Fast food</div><div class="detail-subtitle">Leopoldstadt</div><p class="detail-text">Vicino alla ruota panoramica.</p><div class="grid"><div class="info"><div class="i">⭐</div><div>3.8/5</div></div><div class="info"><div class="i">📍</div><div id="detail-distance-bk-prater">Calcolo…</div></div></div><button class="go-btn" onclick="navigateSmart(48.2167,16.3978,'Burger King Prater')">🧭 Come arrivare</button></div></div>
+<!-- DETTAGLIO: Schönbrunn -->
+<div id="detail-schoenbrunn" class="detail-page">
+  <div class="detail-header"><button class="back-btn" onclick="closeDetail()">←</button><h2>Palazzo di Schönbrunn</h2></div>
+  <div class="detail-content">
+    <img class="detail-image" src="https://images.unsplash.com/photo-1534119139482-b530a7f9a98c?w=400&h=200&fit=crop" alt="Schönbrunn"/>
+    <div class="detail-title">Residenza imperiale</div>
+    <div class="detail-subtitle">Asburgo • Hietzing</div>
+    <p class="detail-text">Palazzo, giardini barocchi, Gloriette e lo zoo più antico.</p>
+    <div class="grid">
+      <div class="info"><div class="i">💰</div><div>Biglietto</div></div>
+      <div class="info"><div class="i">⭐</div><div>4.8/5</div></div>
+      <div class="info"><div class="i">📍</div><div id="detail-distance-schoenbrunn">Calcolo…</div></div>
+      <div class="info"><div class="i">🚇</div><div>U4 Schönbrunn</div></div>
+    </div>
+    <button class="go-btn" onclick="navigateSmart(48.18452,16.31218,'Schönbrunn')">🧭 Come arrivare</button>
+  </div>
+</div>
+
+<!-- DETTAGLIO: Belvedere -->
+<div id="detail-belvedere" class="detail-page">
+  <div class="detail-header"><button class="back-btn" onclick="closeDetail()">←</button><h2>Belvedere</h2></div>
+  <div class="detail-content">
+    <img class="detail-image" src="https://images.unsplash.com/photo-1508606572321-901ea443707f?w=400&h=200&fit=crop" alt="Belvedere"/>
+    <div class="detail-title">Arte & giardini</div>
+    <div class="detail-subtitle">Klimt • Landstraße</div>
+    <p class="detail-text">Il Bacio di Klimt e collezioni austriache tra due palazzi barocchi.</p>
+    <div class="grid">
+      <div class="info"><div class="i">💰</div><div>Biglietto</div></div>
+      <div class="info"><div class="i">⭐</div><div>4.7/5</div></div>
+      <div class="info"><div class="i">📍</div><div id="detail-distance-belvedere">Calcolo…</div></div>
+      <div class="info"><div class="i">🖼️</div><div>Museo</div></div>
+    </div>
+    <button class="go-btn" onclick="navigateSmart(48.19112,16.38005,'Belvedere')">🧭 Come arrivare</button>
+  </div>
+</div>
+
+<!-- DETTAGLIO: Prater -->
+<div id="detail-prater" class="detail-page">
+  <div class="detail-header"><button class="back-btn" onclick="closeDetail()">←</button><h2>Prater & Riesenrad</h2></div>
+  <div class="detail-content">
+    <img class="detail-image" src="https://images.unsplash.com/photo-1569429593159-228f31b7b2c6?w=400&h=200&fit=crop" alt="Prater"/>
+    <div class="detail-title">Parco e luna park</div>
+    <div class="detail-subtitle">Leopoldstadt</div>
+    <p class="detail-text">Ruota panoramica del 1897, viali alberati e street food.</p>
+    <div class="grid">
+      <div class="info"><div class="i">💰</div><div>Parco pubblico</div></div>
+      <div class="info"><div class="i">⭐</div><div>4.6/5</div></div>
+      <div class="info"><div class="i">📍</div><div id="detail-distance-prater">Calcolo…</div></div>
+      <div class="info"><div class="i">🚇</div><div>U1/U2 Praterstern</div></div>
+    </div>
+    <button class="go-btn" onclick="navigateSmart(48.21627,16.39929,'Prater')">🧭 Come arrivare</button>
+  </div>
+</div>
+
+<!-- DETTAGLIO: MuseumsQuartier -->
+<div id="detail-mq" class="detail-page">
+  <div class="detail-header"><button class="back-btn" onclick="closeDetail()">←</button><h2>MuseumsQuartier</h2></div>
+  <div class="detail-content">
+    <img class="detail-image" src="https://images.unsplash.com/photo-1543303437-b11f6b8fc1a9?w=400&h=200&fit=crop" alt="MuseumsQuartier"/>
+    <div class="detail-title">Polo culturale</div>
+    <div class="detail-subtitle">Leopold Museum, mumok</div>
+    <p class="detail-text">Corti animate, arte moderna e caffè. Ottimo anche la sera.</p>
+    <div class="grid">
+      <div class="info"><div class="i">💰</div><div>Musei a pagamento</div></div>
+      <div class="info"><div class="i">⭐</div><div>4.6/5</div></div>
+      <div class="info"><div class="i">📍</div><div id="detail-distance-mq">Calcolo…</div></div>
+      <div class="info"><div class="i">☕</div><div>Locali</div></div>
+    </div>
+    <button class="go-btn" onclick="navigateSmart(48.20387,16.35854,'MuseumsQuartier')">🧭 Come arrivare</button>
+  </div>
+</div>
+
+<!-- DETTAGLIO: Hundertwasserhaus -->
+<div id="detail-hundert" class="detail-page">
+  <div class="detail-header"><button class="back-btn" onclick="closeDetail()">←</button><h2>Hundertwasserhaus</h2></div>
+  <div class="detail-content">
+    <img class="detail-image" src="https://images.unsplash.com/photo-1598620616477-0ef9eb3eeb82?w=400&h=200&fit=crop" alt="Hundertwasserhaus"/>
+    <div class="detail-title">Architettura organica</div>
+    <div class="detail-subtitle">Landstraße</div>
+    <p class="detail-text">Facciate colorate, linee curve e terrazze verdi. Visita esterna.</p>
+    <div class="grid">
+      <div class="info"><div class="i">💰</div><div>Gratis (esterno)</div></div>
+      <div class="info"><div class="i">⭐</div><div>4.5/5</div></div>
+      <div class="info"><div class="i">📍</div><div id="detail-distance-hundert">Calcolo…</div></div>
+      <div class="info"><div class="i">🎨</div><div>Iconico</div></div>
+    </div>
+    <button class="go-btn" onclick="navigateSmart(48.20703,16.39213,'Hundertwasserhaus')">🧭 Come arrivare</button>
+  </div>
+</div>
+
+
+<!-- FOOD dettagli -->
+<div id="detail-figlmueller" class="detail-page">
+  <div class="detail-header"><button class="back-btn" onclick="closeDetail()">←</button><h2>Figlmüller Bäckerstraße</h2></div>
+  <div class="detail-content">
+    <img class="detail-image" src="https://images.unsplash.com/photo-1550547660-d9450f859349?w=400&h=200&fit=crop" alt="Schnitzel"/>
+    <div class="detail-title">Schnitzel iconico</div>
+    <div class="detail-subtitle">Centro</div>
+    <p class="detail-text">Prenota se possibile: molto richiesto.</p>
+    <div class="grid">
+      <div class="info"><div class="i">⭐</div><div>4.6/5</div></div>
+      <div class="info"><div class="i">📍</div><div id="detail-distance-figlmueller">Calcolo…</div></div>
+    </div>
+    <button class="go-btn" onclick="navigateSmart(48.2089,16.3761,'Figlmüller Bäckerstraße')">🧭 Come arrivare</button>
+  </div>
+</div>
+
+<div id="detail-plachutta" class="detail-page">
+  <div class="detail-header"><button class="back-btn" onclick="closeDetail()">←</button><h2>Plachutta Wollzeile</h2></div>
+  <div class="detail-content">
+    <img class="detail-image" src="https://images.unsplash.com/photo-1543332164-6e82f355bad2?w=400&h=200&fit=crop" alt="Tafelspitz"/>
+    <div class="detail-title">Tafelspitz</div>
+    <div class="detail-subtitle">Centro</div>
+    <p class="detail-text">Specialità viennesi in sala classica.</p>
+    <div class="grid">
+      <div class="info"><div class="i">⭐</div><div>4.5/5</div></div>
+      <div class="info"><div class="i">📍</div><div id="detail-distance-plachutta">Calcolo…</div></div>
+    </div>
+    <button class="go-btn" onclick="navigateSmart(48.2080,16.3769,'Plachutta Wollzeile')">🧭 Come arrivare</button>
+  </div>
+</div>
+
+<div id="detail-cafecentral" class="detail-page">
+  <div class="detail-header"><button class="back-btn" onclick="closeDetail()">←</button><h2>Café Central</h2></div>
+  <div class="detail-content">
+    <img class="detail-image" src="https://images.unsplash.com/photo-1561070791-2526d30994b5?w=400&h=200&fit=crop" alt="Cafe"/>
+    <div class="detail-title">Caffè storico</div>
+    <div class="detail-subtitle">Ring</div>
+    <p class="detail-text">Torte classiche e atmosfera fin de siècle.</p>
+    <div class="grid">
+      <div class="info"><div class="i">⭐</div><div>4.6/5</div></div>
+      <div class="info"><div class="i">📍</div><div id="detail-distance-cafecentral">Calcolo…</div></div>
+    </div>
+    <button class="go-btn" onclick="navigateSmart(48.2101,16.3647,'Café Central')">🧭 Come arrivare</button>
+  </div>
+</div>
+
+<div id="detail-mcd-stephansplatz" class="detail-page">
+  <div class="detail-header"><button class="back-btn" onclick="closeDetail()">←</button><h2>McDonald's Stephansplatz</h2></div>
+  <div class="detail-content">
+    <img class="detail-image" src="https://images.unsplash.com/photo-1550547660-d9450f859349?w=400&h=200&fit=crop" alt="Fast food"/>
+    <div class="detail-title">Fast food</div>
+    <div class="detail-subtitle">Centro</div>
+    <p class="detail-text">Opzione rapida in pieno centro.</p>
+    <div class="grid">
+      <div class="info"><div class="i">⭐</div><div>3.9/5</div></div>
+      <div class="info"><div class="i">📍</div><div id="detail-distance-mcd-stephansplatz">Calcolo…</div></div>
+    </div>
+    <button class="go-btn" onclick="navigateSmart(48.2082,16.3725,'McDonald\'s Stephansplatz')">🧭 Come arrivare</button>
+  </div>
+</div>
+
+<div id="detail-bk-prater" class="detail-page">
+  <div class="detail-header"><button class="back-btn" onclick="closeDetail()">←</button><h2>Burger King – Prater</h2></div>
+  <div class="detail-content">
+    <img class="detail-image" src="https://images.unsplash.com/photo-1550547660-d9450f859349?w=400&h=200&fit=crop" alt="Fast food"/>
+    <div class="detail-title">Fast food</div>
+    <div class="detail-subtitle">Leopoldstadt</div>
+    <p class="detail-text">Vicino alla ruota panoramica.</p>
+    <div class="grid">
+      <div class="info"><div class="i">⭐</div><div>3.8/5</div></div>
+      <div class="info"><div class="i">📍</div><div id="detail-distance-bk-prater">Calcolo…</div></div>
+    </div>
+    <button class="go-btn" onclick="navigateSmart(48.2167,16.3978,'Burger King Prater')">🧭 Come arrivare</button>
+  </div>
+</div>
 
 <script>
-  let userLocation=null;
-  // POI principali
-  const attractions={
-    'stephansdom':{lat:48.20849,lng:16.37208},
-    'schoenbrunn':{lat:48.18452,lng:16.31218},
-    'belvedere':{lat:48.19112,lng:16.38005},
-    'prater':{lat:48.21627,lng:16.39929},
-    'mq':{lat:48.20387,lng:16.35854},
-    'hundert':{lat:48.20703,lng:16.39213},
-    // extra
-    'donauturm':{lat:48.24026,lng:16.40938},
-    'kahlenberg-park':{lat:48.27035,lng:16.33339},
-    'rax-seilbahn':{lat:47.70274,lng:15.78037}
-  };
+/* ==== Stato globale ==== */
+let userLocation = null;
 
-  // Parcheggi/ricarica
-  const points={
-    'pr-erdberg':{lat:48.19279,lng:16.41385,type:'parkride'},
-    'mq-garage':{lat:48.20358,lng:16.35820,type:'garage'},
-    'wien-energie-rathaus':{lat:48.21350,lng:16.35723,type:'fast'},
-    'garage-karteis':{lat:48.20566,lng:16.37043,type:'garage'},
-    'tesla-vienna':{lat:48.18333,lng:16.33333,type:'fast'}
-  };
+const attractions = {
+  'stephansdom': {lat:48.20849,lng:16.37208},
+  'schoenbrunn': {lat:48.18452,lng:16.31218},
+  'belvedere':   {lat:48.19112,lng:16.38005},
+  'prater':      {lat:48.21627,lng:16.39929},
+  'mq':          {lat:48.20387,lng:16.35854},
+  'hundert':     {lat:48.20703,lng:16.39213},
+  // extra
+  'donauturm':       {lat:48.24026,lng:16.40938},
+  'kahlenberg-park': {lat:48.27035,lng:16.33339},
+  'rax-seilbahn':    {lat:47.70274,lng:15.78037}
+};
+const points = {
+  'pr-erdberg': {lat:48.19279,lng:16.41385,type:'parkride'},
+  'mq-garage':  {lat:48.20358,lng:16.35820,type:'garage'},
+  'wien-energie-rathaus': {lat:48.21350,lng:16.35723,type:'fast'},
+  'garage-karteis': {lat:48.20566,lng:16.37043,type:'garage'},
+  'tesla-vienna':   {lat:48.18333,lng:16.33333,type:'fast'}
+};
+const food = {
+  'figlmueller':        {lat:48.2089,lng:16.3761,type:'tipico',stars:4.6},
+  'plachutta':          {lat:48.2080,lng:16.3769,type:'tipico',stars:4.5},
+  'cafecentral':        {lat:48.2101,lng:16.3647,type:'caffè',stars:4.6},
+  'mcd-stephansplatz':  {lat:48.2082,lng:16.3725,type:'fast',stars:3.9},
+  'bk-prater':          {lat:48.2167,lng:16.3978,type:'fast',stars:3.8}
+};
 
-  // Food
-  const food={
-    'figlmueller':{lat:48.2089,lng:16.3761,type:'tipico',stars:4.6},
-    'plachutta':{lat:48.2080,lng:16.3769,type:'tipico',stars:4.5},
-    'cafecentral':{lat:48.2101,lng:16.3647,type:'caffè',stars:4.6},
-    'mcd-stephansplatz':{lat:48.2082,lng:16.3725,type:'fast',stars:3.9},
-    'bk-prater':{lat:48.2167,lng:16.3978,type:'fast',stars:3.8}
-  };
+/* ==== Utilità ==== */
+const debounce = (fn, d=200) => { let t; return (...a)=>{clearTimeout(t); t=setTimeout(()=>fn(...a),d);} }
 
-  const debounce=(fn,d=200)=>{let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),d)}};
-  const filterContentDeb=debounce(filterContent,200);
+function setStatus(text, color) {
+  const el = document.getElementById('location-status');
+  if (!el) return;
+  el.style.color = color || '#0f172a';
+  el.textContent = text;
+}
 
-  // ====== METEO (Open-Meteo, nessuna chiave necessaria) ======
-  async function fetchWeather(lat,lng){
-    try{
-      const url=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current_weather=true&hourly=temperature_2m,precipitation,weathercode&timezone=auto`;
-      const r=await fetch(url);
-      const j=await r.json();
-      if(j.current_weather){
-        const t=Math.round(j.current_weather.temperature);
-        const w=j.current_weather.weathercode;
-        document.getElementById('w-temp').textContent=t+'°C';
-        document.getElementById('w-desc').textContent=codeToDesc(w);
-        document.getElementById('w-icon').textContent=codeToIcon(w);
-      }
-      // Next 8 ore
-      const hourly=document.getElementById('hourly');
-      hourly.innerHTML='';
-      const times=j.hourly.time;const temps=j.hourly.temperature_2m;const prec=j.hourly.precipitation;const codes=j.hourly.weathercode;
-      const now=new Date();
-      let printed=0;
-      for(let i=0;i<times.length && printed<12;i++){
-        const ts=new Date(times[i]);
-        if(ts>=now){
-          const chip=document.createElement('div');chip.className='hchip';
-          const hh=ts.getHours().toString().padStart(2,'0');
-          chip.innerHTML=`<div>${hh}:00</div><div style="font-size:18px">${codeToIcon(codes[i])}</div><div>${Math.round(temps[i])}°C</div><div style="font-size:11px">${prec[i]>0?prec[i].toFixed(1)+'mm':''}</div>`;
-          hourly.appendChild(chip);printed++;
-        }
-      }
-    }catch(e){
-      document.getElementById('w-desc').textContent='Meteo non disponibile';
+function dist(a,b){
+  const R=6371, dLat=(b.lat-a.lat)*Math.PI/180, dLng=(b.lng-a.lng)*Math.PI/180;
+  const s1=Math.sin(dLat/2), s2=Math.sin(dLng/2);
+  const c=2*Math.atan2(Math.sqrt(s1*s1+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*s2*s2),
+                       Math.sqrt(1-(s1*s1+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*s2*s2)));
+  const km=R*c;
+  return km<1? Math.round(km*1000)+'m' : km.toFixed(1)+'km';
+}
+function upd(id, txt){
+  const el = document.getElementById('distance-'+id);
+  if (el) el.textContent = '📍 '+txt;
+  const el2 = document.getElementById('detail-distance-'+id);
+  if (el2) el2.textContent = txt;
+  const mapExtra = {'prater':'prater-extra'};
+  if (mapExtra[id]) {
+    const elx = document.getElementById('distance-'+mapExtra[id]);
+    if (elx) elx.textContent = '📍 '+txt;
+  }
+}
+function toKm(text){ return text.endsWith('m') ? parseInt(text)/1000 : parseFloat(text) }
+function suggestMode(km){
+  if (km<=1)  return {label:'🚶‍♂️ A piedi', class:'walk'};
+  if (km<=3)  return {label:'🛴/🚇 Monopattino o metro', class:'pt'};
+  if (km<=12) return {label:'🚇/🚗 Mezzi o auto', class:'pt'};
+  return {label:'🚗 Auto/treno (lontano)', class:'drive'};
+}
+function updMode(id){
+  const c = attractions[id] || food[id] || points[id];
+  if (!c || !userLocation) return;
+  const km = toKm(dist(userLocation, c));
+  const tag = document.getElementById('mode-'+id);
+  if (!tag) return;
+  const m = suggestMode(km);
+  tag.className = 'tag '+m.class;
+  tag.textContent = m.label;
+}
+
+/* ==== Meteo (Open‑Meteo) ==== */
+async function fetchWeather(lat,lng){
+  try{
+    const url=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current_weather=true&hourly=temperature_2m,precipitation,weathercode&timezone=auto`;
+    const r = await fetch(url);
+    const j = await r.json();
+    if (j.current_weather){
+      const t = Math.round(j.current_weather.temperature);
+      const w = j.current_weather.weathercode;
+      document.getElementById('w-temp').textContent = t+'°C';
+      document.getElementById('w-desc').textContent = codeToDesc(w);
+      document.getElementById('w-icon').textContent = codeToIcon(w);
     }
-  }
-  function codeToDesc(c){
-    const m={0:'Sereno',1:'Poco nuvoloso',2:'Variabile',3:'Nuvoloso',45:'Nebbia',48:'Brina',51:'Pioviggine',53:'Pioviggine',55:'Pioviggine forte',61:'Pioggia',63:'Pioggia',65:'Pioggia forte',71:'Neve',80:'Rovesci',95:'Temporale'};return m[c]||'Condizioni variabili'}
-  function codeToIcon(c){
-    if([0].includes(c))return '☀️';
-    if([1,2].includes(c))return '⛅';
-    if([3,45,48].includes(c))return '☁️';
-    if([51,53,55,61,63,65,80].includes(c))return '🌧️';
-    if([71].includes(c))return '🌨️';
-    if([95].includes(c))return '⛈️';
-    return '🌤️';
-  }
-
-  // ====== GEO / DISTANZE ======
-  function initializeGPS(){
-    if(navigator.geolocation){
-      setStatus('🔄 Rilevamento posizione…','#ff9800');
-      navigator.geolocation.getCurrentPosition((pos)=>{
-        userLocation={lat:pos.coords.latitude,lng:pos.coords.longitude};
-        setStatus('✅ GPS attivo - Distanze precise','#4caf50');
-        calcAll();
-        fetchWeather(userLocation.lat,userLocation.lng);
-      },(err)=>{handleGPSError(err)},{enableHighAccuracy:true,timeout:15000,maximumAge:600000});
-    }else{
-      setStatus('⚠️ GPS non supportato - uso distanze approssimative','#b91c1c');
-      showApprox();
-      // Meteo su Stephansplatz come fallback
-      fetchWeather(48.20849,16.37208);
+    const hourly = document.getElementById('hourly');
+    hourly.innerHTML='';
+    const times=j.hourly.time, temps=j.hourly.temperature_2m, prec=j.hourly.precipitation, codes=j.hourly.weathercode;
+    const now = new Date(); let printed=0;
+    for(let i=0;i<times.length && printed<12;i++){
+      const ts=new Date(times[i]);
+      if(ts>=now){
+        const chip=document.createElement('div'); chip.className='hchip';
+        const hh=ts.getHours().toString().padStart(2,'0');
+        chip.innerHTML=`<div>${hh}:00</div><div style="font-size:18px">${codeToIcon(codes[i])}</div><div>${Math.round(temps[i])}°C</div><div style="font-size:11px">${prec[i]>0?prec[i].toFixed(1)+'mm':''}</div>`;
+        hourly.appendChild(chip); printed++;
+      }
     }
+  }catch(e){
+    document.getElementById('w-desc').textContent = 'Meteo non disponibile';
   }
-  function setStatus(text,color){const el=document.getElementById('location-status');el.style.color=color;el.textContent=text}
-  function handleGPSError(error){
-    const msgs={1:['📍 Accesso posizione negato','Abilita la localizzazione nel browser'],2:['📡 Posizione non disponibile','Spostati all\'aperto e riprova'],3:['⏱️ Timeout','Riprova più tardi']};
-    const [m,d]=msgs[error.code]||['⚠️ Errore GPS','Problema sconosciuto'];
-    document.getElementById('location-status').innerHTML=`<strong style="color:#b45309">${m}</strong><br><span style="color:#6b7280">${d}</span>`;
-    showApprox();
-    fetchWeather(48.20849,16.37208);
+}
+function codeToDesc(c){
+  const m={0:'Sereno',1:'Poco nuvoloso',2:'Variabile',3:'Nuvoloso',45:'Nebbia',48:'Brina',51:'Pioviggine',53:'Pioviggine',55:'Pioviggine forte',61:'Pioggia',63:'Pioggia',65:'Pioggia forte',71:'Neve',80:'Rovesci',95:'Temporale'};
+  return m[c]||'Condizioni variabili';
+}
+function codeToIcon(c){
+  if([0].includes(c)) return '☀️';
+  if([1,2].includes(c)) return '⛅';
+  if([3,45,48].includes(c)) return '☁️';
+  if([51,53,55,61,63,65,80].includes(c)) return '🌧️';
+  if([71].includes(c)) return '🌨️';
+  if([95].includes(c)) return '⛈️';
+  return '🌤️';
+}
+
+/* ==== GPS / Distanze ==== */
+function renderGPSActions(showRetry=true){
+  const el = document.getElementById('gps-actions');
+  if (!el) return;
+  el.style.display='flex';
+  el.innerHTML = (showRetry?`<button class="primary" onclick="retryGPS()">🔄 Riprova GPS</button>`:'')
+               + ` <button onclick="selectManualLocation()">🎯 Posizione manuale</button>`;
+}
+function retryGPS(){ initializeGPS(); }
+function selectManualLocation(){
+  const presets = [
+    {name:'Stephansplatz (centro)', lat:48.20849, lng:16.37208},
+    {name:'Schönbrunn', lat:48.18452, lng:16.31218},
+    {name:'Prater', lat:48.21627, lng:16.39929}
+  ];
+  const label = presets.map((p,i)=>`${i+1}) ${p.name}`).join('\\n');
+  const pick = prompt(`Seleziona una posizione:\\n${label}\\n\\nOppure inserisci "lat,lng" manualmente`, '1');
+  let lat,lng;
+  if (!pick) return;
+  if (pick.includes(',')) {
+    const [a,b] = pick.split(',').map(x=>parseFloat(x.trim()));
+    if (isFinite(a) && isFinite(b)) { lat=a; lng=b; }
+  } else {
+    const idx = parseInt(pick,10)-1;
+    if (presets[idx]) { lat=presets[idx].lat; lng=presets[idx].lng; }
   }
-  function calcAll(){if(!userLocation)return;[...Object.keys(attractions),...Object.keys(points),...Object.keys(food)].forEach(id=>{const coord=attractions[id]||points[id]||food[id];upd(id,dist(userLocation,coord));if(food[id])updMode(id)});['donauturm','kahlenberg-park','rax-seilbahn','prater'].forEach(id=>{const coord=attractions[id];if(coord)upd(id,dist(userLocation,coord));if(coord&&document.getElementById('mode-'+id))updMode(id)});}
-  function dist(a,b){const R=6371,dLat=(b.lat-a.lat)*Math.PI/180,dLng=(b.lng-a.lng)*Math.PI/180;const c=2*Math.atan2(Math.sqrt(Math.sin(dLat/2)**2+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dLng/2)**2),Math.sqrt(1-(Math.sin(dLat/2)**2+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dLng/2)**2)));const km=R*c;return km<1?Math.round(km*1000)+'m':km.toFixed(1)+'km'}
-  function upd(id,txt){const el=document.getElementById('distance-'+id);if(el)el.textContent='📍 '+txt;const el2=document.getElementById('detail-distance-'+id);if(el2)el2.textContent=txt;const extraIdMap={'prater':'prater-extra'};if(extraIdMap[id]){const elx=document.getElementById('distance-'+extraIdMap[id]);if(elx)elx.textContent='📍 '+txt}}
+  if (!isFinite(lat)||!isFinite(lng)) return alert('Coordinate non valide.');
+  userLocation = {lat,lng};
+  setStatus('ℹ️ Posizione manuale impostata', '#1e40af');
+  calcAll();
+  fetchWeather(lat,lng);
+  const act = document.getElementById('gps-actions'); if (act) act.style.display='none';
+}
 
-  // Suggerimento modalità
-  function updMode(id){
-    const coord=attractions[id]||food[id]||points[id];if(!coord||!userLocation)return;const km=toKm(dist(userLocation,coord));const tag=document.getElementById('mode-'+id);if(!tag)return;const mode=suggestMode(km);tag.className='tag '+mode.class;tag.textContent=mode.label;
+function initializeGPS(){
+  if (!window.isSecureContext && location.hostname!=='localhost') {
+    setStatus('⚠️ Il browser blocca il GPS perché non sei in HTTPS. Uso posizione di Stephansplatz.', '#b91c1c');
+    showApprox(); fetchWeather(48.20849,16.37208); renderGPSActions(false);
+    return;
   }
-  function toKm(text){if(text.endsWith('m')){return parseInt(text)/1000}else{return parseFloat(text)}}
-  function suggestMode(km){
-    if(km<=1) return {label:'🚶‍♂️ A piedi',class:'walk'};
-    if(km<=3) return {label:'🛴/🚇 Monopattino o metro',class:'pt'};
-    if(km<=12) return {label:'🚇/🚗 Mezzi o auto',class:'pt'};
-    return {label:'🚗 Auto/treno (lontano)',class:'drive'};
+  if (!navigator.geolocation) {
+    setStatus('⚠️ GPS non supportato - uso distanze approssimative', '#b91c1c');
+    showApprox(); fetchWeather(48.20849,16.37208); renderGPSActions(false);
+    return;
   }
+  setStatus('🔄 Rilevamento posizione…', '#ff9800');
+  navigator.geolocation.getCurrentPosition((pos)=>{
+    userLocation = {lat:pos.coords.latitude, lng:pos.coords.longitude};
+    setStatus('✅ GPS attivo - Distanze precise', '#4caf50');
+    calcAll();
+    fetchWeather(userLocation.lat, userLocation.lng);
+    const act = document.getElementById('gps-actions'); if (act) act.style.display='none';
+  }, handleGPSError, {enableHighAccuracy:true, timeout:15000, maximumAge:600000});
+}
 
-  // Navigazione smart (sceglie walking se <1km, altrimenti driving; l'utente può passare alla metro dall'app Maps)
-  function navigateSmart(lat,lng,name){
-    const mode=(userLocation?(()=>{const km=toKm(dist(userLocation,{lat,lng}));return km<=1?'walking':'driving'})():'driving');
-    navigateTo(lat,lng,name,mode);
-  }
+function handleGPSError(error){
+  const msgs = {
+    1:['📍 Accesso posizione negato','Abilita la localizzazione nel browser'],
+    2:['📡 Posizione non disponibile','Spostati all’aperto e riprova'],
+    3:['⏱️ Timeout','Riprova più tardi']
+  };
+  const [m,d] = msgs[error?.code] || ['⚠️ Errore GPS','Problema sconosciuto'];
+  const el = document.getElementById('location-status');
+  if (el) el.innerHTML = `<strong style="color:#b45309">${m}</strong><br><span style="color:#6b7280">${d}</span>`;
+  showApprox(); fetchWeather(48.20849,16.37208); renderGPSActions(true);
+}
 
-  function openDetail(id){const page=document.getElementById('detail-'+id);if(!page)return;history.pushState({detail:id},'',`#${id}`);page.classList.add('active');document.body.style.overflow='hidden';const coord=attractions[id]||points[id]||food[id];if(coord&&userLocation){upd(id,dist(userLocation,coord));updMode(id)}setTimeout(()=>{const btn=page.querySelector('.go-btn');if(btn){const r=btn.getBoundingClientRect();if(r.bottom>innerHeight)btn.scrollIntoView({behavior:'smooth',block:'end'})}},180)}
-  function closeDetail(){document.querySelectorAll('.detail-page').forEach(p=>p.classList.remove('active'));document.body.style.overflow='auto';if(location.hash)history.replaceState(null,'',location.pathname)}
+function showApprox(){
+  const center = {lat:48.20849,lng:16.37208};
+  Object.keys(attractions).forEach(id=> upd(id, dist(center, attractions[id])) );
+  Object.keys(points).forEach(id=> upd(id, dist(center, points[id])) );
+  Object.keys(food).forEach(id=> upd(id, dist(center, food[id])) );
+}
 
-  function navigateTo(lat,lng,name,mode='walking'){
-    const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent);let url='';
-    if(isIOS){url=`maps://?daddr=${lat},${lng}&dirflg=${mode==='driving'?'d':'w'}`}
-    else{url=`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=${mode}`}
-    window.open(url);toast(`${mode==='driving'?'🚗':'🚶‍♂️'} Navigazione verso ${name}`);
-  }
-  function toast(msg){const el=document.createElement('div');el.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.82);color:#fff;padding:12px 18px;border-radius:12px;font-weight:600;z-index:2000';el.textContent=msg;document.body.appendChild(el);setTimeout(()=>el.remove(),1800)}
-
-  function showTab(name,evt){['attractions','food','parking','electric','extra'].forEach(s=>document.getElementById(s+'-content').classList.add('hidden'));document.getElementById(name+'-content').classList.remove('hidden');document.querySelectorAll('.nav-tab').forEach(t=>{t.classList.remove('active');t.removeAttribute('aria-current')});evt.currentTarget.classList.add('active');evt.currentTarget.setAttribute('aria-current','page')}
-
-  function filterByType(type,section,evt){const root=document.getElementById(section+'-content');evt.currentTarget.parentElement.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));evt.currentTarget.classList.add('active');const mapSel={attractions:'.attraction-card',food:'.food-card',parking:'.parking-card',electric:'.parking-card',extra:'.extra-card'};const selector=mapSel[section];root.querySelectorAll(selector).forEach(c=>{if(type==='all'){c.style.display='block';return;}const t=c.getAttribute('data-type');c.style.display=(t===type)?'block':'none'})}
-
-  function filterContent(q,section){const root=document.getElementById(section+'-content');const mapSel={attractions:'.attraction-card',food:'.food-card',parking:'.parking-card',electric:'.parking-card',extra:'.extra-card'};const selector=mapSel[section];const s=(q||'').toLowerCase();root.querySelectorAll(selector).forEach(c=>{const t=c.querySelector('.card-title').textContent.toLowerCase();const d=c.querySelector('.card-description').textContent.toLowerCase();const sub=c.querySelector('.card-subtitle')?c.querySelector('.card-subtitle').textContent.toLowerCase():'';c.style.display=(t.includes(s)||d.includes(s)||sub.includes(s))?'block':'none'})}
-
-  function openMap(){if(userLocation){window.open(`https://www.google.com/maps/search/vienna+attractions+restaurants+parking+ev/@${userLocation.lat},${userLocation.lng},13z`)}else{window.open('https://www.google.com/maps/search/vienna+attractions+restaurants+parking+ev/@48.20849,16.37208,13z')}}
-
-  document.addEventListener('DOMContentLoaded',()=>{
-    initializeGPS();
-    window.addEventListener('popstate',(e)=>{const open=document.querySelector('.detail-page.active');if(open){closeDetail()}else if(e.state&&e.state.detail){openDetail(e.state.detail)}});
-    if(location.hash){const id=location.hash.substring(1);if(document.getElementById('detail-'+id)){setTimeout(()=>openDetail(id),120)}}
-    document.querySelectorAll('.card').forEach(c=>c.addEventListener('click',function(){if(!this.hasAttribute('onclick')){this.style.transform='scale(.98)';setTimeout(()=>this.style.transform='',150)}}));
+function calcAll(){
+  if (!userLocation) return;
+  [...Object.keys(attractions), ...Object.keys(points), ...Object.keys(food)]
+    .forEach(id=>{
+      const c = attractions[id] || points[id] || food[id];
+      upd(id, dist(userLocation, c));
+      if (food[id]) updMode(id);
+    });
+  ['donauturm','kahlenberg-park','rax-seilbahn','prater'].forEach(id=>{
+    const c = attractions[id]; if (c) { upd(id, dist(userLocation, c)); const tag = document.getElementById('mode-'+id); if (tag) updMode(id); }
   });
+}
+
+/* ==== Navigazione / Mappe ==== */
+function navigateTo(lat,lng,name,mode){
+  const n = encodeURIComponent(name||'Destinazione');
+  const d = `${lat},${lng}`;
+  const url = `https://www.google.com/maps/dir/?api=1&destination=${d}&travelmode=${mode||'driving'}&dir_action=navigate`;
+  window.open(url, '_blank');
+}
+function navigateSmart(lat,lng,name){
+  const mode = (userLocation ? (toKm(dist(userLocation,{lat,lng}))<=1?'walking':'driving') : 'driving');
+  navigateTo(lat,lng,name,mode);
+}
+function openMap(){
+  const c = userLocation || {lat:48.20849,lng:16.37208};
+  window.open(`https://www.google.com/maps/search/?api=1&query=${c.lat},${c.lng}`,'_blank');
+}
+
+/* ==== UI: Tabs / Dettagli / Filtri ==== */
+function showTab(tab, ev){
+  document.querySelectorAll('.nav-tab').forEach(b=>b.classList.remove('active'));
+  if (ev && ev.currentTarget) ev.currentTarget.classList.add('active');
+  const sections = ['attractions','food','parking','electric','extra'];
+  sections.forEach(s=>{
+    document.getElementById(`${s}-content`).classList.toggle('hidden', s!==tab);
+  });
+  document.querySelector('.content').scrollTop = 0;
+}
+
+function openDetail(id){
+  const page = document.getElementById('detail-'+id);
+  if (!page) return;
+  history.pushState({detail:id},'',`#${id}`);
+  page.classList.add('active');
+  document.body.style.overflow='hidden';
+  const coord = attractions[id] || points[id] || food[id];
+  if (coord) {
+    const base = userLocation || {lat:48.20849,lng:16.37208};
+    upd(id, dist(base, coord));
+    updMode(id);
+  }
+  setTimeout(()=>{
+    const btn = page.querySelector('.go-btn');
+    if (btn) {
+      const r = btn.getBoundingClientRect();
+      if (r.bottom>innerHeight) btn.scrollIntoView({behavior:'smooth',block:'end'});
+    }
+  },180);
+}
+function closeDetail(){
+  const active = document.querySelector('.detail-page.active');
+  if (active) active.classList.remove('active');
+  document.body.style.overflow='';
+  if (location.hash) history.pushState('', document.title, window.location.pathname + window.location.search);
+}
+
+// Filtri & ricerca
+const filterContentDeb = debounce(filterContent, 200);
+function filterContent(q, section){
+  const cls = section==='attractions'?'attraction-card':
+              section==='food'?'food-card':
+              section==='parking'?'parking-card':'extra-card';
+  const cards = document.querySelectorAll(`.${cls}`);
+  const qq = (q||'').toLowerCase();
+  cards.forEach(c=>{
+    const txt = c.innerText.toLowerCase();
+    c.style.display = txt.includes(qq) ? '' : 'none';
+  });
+}
+function filterByType(type, section, ev){
+  if (ev && ev.currentTarget){
+    const wrap = ev.currentTarget.closest('.filters');
+    if (wrap) wrap.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+    ev.currentTarget.classList.add('active');
+  }
+  const cls = section==='attractions'?'attraction-card':
+              section==='food'?'food-card':
+              section==='parking'?'parking-card':'extra-card';
+  const cards = document.querySelectorAll(`.${cls}`);
+  cards.forEach(c=>{
+    const t = c.getAttribute('data-type') || 'all';
+    c.style.display = (type==='all' || t===type) ? '' : 'none';
+  });
+}
+
+/* ==== Avvio ==== */
+window.addEventListener('DOMContentLoaded', ()=>{
+  showTab('attractions');
+  initializeGPS();
+  window.addEventListener('popstate', closeDetail);
+});
 </script>
+
 </body>
 </html>
