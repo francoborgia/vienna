@@ -540,4 +540,72 @@ window.addEventListener('DOMContentLoaded', ()=>{
      Funzionano invariati con questo file.                                  -->
 
 </body>
+  <script>
+// crea al volo una pagina di dettaglio minima se non esiste
+function ensureDetailPage(id){
+  let page = document.getElementById('detail-'+id);
+  if (page) return page;
+
+  // dati base (titolo/coords) da uno dei cataloghi
+  const data = attractions[id] || points[id] || food[id];
+  if (!data) return null;
+
+  const niceTitle = ({
+    stephansdom:'Cattedrale di Santo Stefano',
+    schoenbrunn:'Palazzo di Schönbrunn',
+    belvedere:'Belvedere',
+    prater:'Prater & Riesenrad',
+    mq:'MuseumsQuartier',
+    hundert:'Hundertwasserhaus'
+  })[id] || id.replace(/[-_]/g,' ').replace(/\b\w/g, m=>m.toUpperCase());
+
+  // costruzione overlay
+  page = document.createElement('div');
+  page.id = 'detail-'+id;
+  page.className = 'detail-page';
+  page.innerHTML = `
+    <div class="detail-header">
+      <button class="back-btn" onclick="closeDetail()">←</button>
+      <h2>${niceTitle}</h2>
+    </div>
+    <div class="detail-content">
+      <div class="detail-title">${niceTitle}</div>
+      <div class="detail-subtitle">Dettaglio rapido</div>
+      <p class="detail-text">Pagina generata automaticamente. Puoi aggiungere immagini/testo in seguito.</p>
+      <div class="grid">
+        <div class="info"><div class="i">📍</div><div id="detail-distance-${id}">Calcolo…</div></div>
+        <div class="info"><div class="i">⭐</div><div>—</div></div>
+      </div>
+      <button class="go-btn" onclick="navigateSmart(${data.lat},${data.lng},'${niceTitle.replace(/'/g,"\\'")}')">🧭 Come arrivare</button>
+    </div>
+  `;
+  document.body.appendChild(page);
+  return page;
+}
+
+// SOSTITUISCI la tua openDetail con questa
+function openDetail(id){
+  const page = ensureDetailPage(id);
+  if (!page) { alert('Dettaglio non disponibile.'); return; }
+
+  // niente pushState in sandbox
+  if (!(location.href.startsWith('about:') || location.origin === 'null')) {
+    try { history.pushState({detail:id}, '', '#'+id); } catch {}
+  }
+
+  page.classList.add('active');
+  document.body.style.overflow = 'hidden';
+
+  // aggiorna distanza/mezzo consigliato
+  const coord = attractions[id] || points[id] || food[id];
+  const base  = userLocation || {lat:48.20849,lng:16.37208};
+  if (coord){
+    upd(id, dist(base, coord));
+    // aggiorna eventuale badge se esiste
+    const tag = document.getElementById('mode-'+id);
+    if (tag) updMode(id);
+  }
+}
+</script>
+
 </html>
